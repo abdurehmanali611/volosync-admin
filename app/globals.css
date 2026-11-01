@@ -1,26 +1,956 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.625rem;
+  /* Zinc canvas with emerald + teal Apex brand */
+  --background: oklch(0.988 0.002 285);
+  --foreground: oklch(0.19 0.006 285);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.19 0.006 285);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.19 0.006 285);
+  --primary: oklch(0.52 0.13 162);
+  --primary-foreground: oklch(0.99 0.01 162);
+  --secondary: oklch(0.965 0.004 285);
+  --secondary-foreground: oklch(0.25 0.006 285);
+  --muted: oklch(0.955 0.004 285);
+  --muted-foreground: oklch(0.5 0.012 285);
+  --accent: oklch(0.94 0.03 162);
+  --accent-foreground: oklch(0.28 0.06 162);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.9 0.006 285);
+  --input: oklch(0.9 0.006 285);
+  --ring: oklch(0.6 0.11 180);
+  --chart-1: oklch(0.62 0.14 162);
+  --chart-2: oklch(0.62 0.12 180);
+  --chart-3: oklch(0.6 0.11 230);
+  --chart-4: oklch(0.6 0.13 295);
+  --chart-5: oklch(0.63 0.19 15);
+  --sidebar: oklch(0.982 0.003 285);
+  --sidebar-foreground: oklch(0.2 0.006 285);
+  --sidebar-primary: oklch(0.52 0.13 162);
+  --sidebar-primary-foreground: oklch(0.99 0.01 162);
+  --sidebar-accent: oklch(0.95 0.015 162);
+  --sidebar-accent-foreground: oklch(0.25 0.04 162);
+  --sidebar-border: oklch(0.9 0.006 285);
+  --sidebar-ring: oklch(0.6 0.11 180);
+  --scrollbar-track: oklch(0.965 0.004 285);
+  --scrollbar-thumb: oklch(0.82 0.006 285);
+  --scrollbar-thumb-hover: oklch(0.66 0.02 285);
+
+  /* Apex brand tokens — emerald + teal + semantic accents (light) */
+  --apex-emerald: oklch(0.52 0.13 162);
+  --apex-emerald-dim: oklch(0.44 0.11 162);
+  --apex-emerald-glow: oklch(0.52 0.13 162 / 16%);
+  --apex-teal: oklch(0.55 0.11 180);
+  --apex-teal-dim: oklch(0.45 0.09 180);
+  --apex-teal-glow: oklch(0.55 0.11 180 / 16%);
+  --apex-sky: oklch(0.55 0.11 230);
+  --apex-sky-glow: oklch(0.55 0.11 230 / 16%);
+  --apex-amber: oklch(0.7 0.14 75);
+  --apex-amber-glow: oklch(0.7 0.14 75 / 16%);
+  --apex-success: oklch(0.52 0.13 162);
+  --apex-success-fg: oklch(0.98 0.02 162);
+  --apex-warning: oklch(0.7 0.14 75);
+  --apex-warning-fg: oklch(0.24 0.04 75);
+  --apex-danger: oklch(0.55 0.19 25);
+  --apex-danger-fg: oklch(0.98 0.01 25);
+  --apex-violet: oklch(0.55 0.15 295);
+  --apex-violet-glow: oklch(0.55 0.15 295 / 16%);
+  --apex-surface-elevated: oklch(1 0 0);
+  /* Legacy alias kept so copied hotcol classes keep resolving (emerald now). */
+  --apex-gold: var(--apex-emerald);
+  --apex-gold-dim: var(--apex-emerald-dim);
+  --apex-gold-glow: var(--apex-emerald-glow);
+}
+
+.dark {
+  --background: oklch(0.145 0.004 285);
+  --foreground: oklch(0.97 0.003 285);
+  --card: oklch(0.21 0.006 285);
+  --card-foreground: oklch(0.97 0.003 285);
+  --popover: oklch(0.21 0.006 285);
+  --popover-foreground: oklch(0.97 0.003 285);
+  --primary: oklch(0.69 0.16 162);
+  --primary-foreground: oklch(0.16 0.04 162);
+  --secondary: oklch(0.274 0.006 286);
+  --secondary-foreground: oklch(0.96 0.003 285);
+  --muted: oklch(0.274 0.006 286);
+  --muted-foreground: oklch(0.71 0.01 285);
+  --accent: oklch(0.28 0.05 162);
+  --accent-foreground: oklch(0.93 0.04 162);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.68 0.13 180);
+  --chart-1: oklch(0.69 0.16 162);
+  --chart-2: oklch(0.7 0.13 180);
+  --chart-3: oklch(0.68 0.13 230);
+  --chart-4: oklch(0.66 0.15 295);
+  --chart-5: oklch(0.65 0.19 15);
+  --sidebar: oklch(0.21 0.006 285);
+  --sidebar-foreground: oklch(0.96 0.003 285);
+  --sidebar-primary: oklch(0.69 0.16 162);
+  --sidebar-primary-foreground: oklch(0.16 0.04 162);
+  --sidebar-accent: oklch(0.25 0.03 165);
+  --sidebar-accent-foreground: oklch(0.96 0.02 165);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.68 0.13 180);
+  --scrollbar-track: oklch(0.21 0.006 285);
+  --scrollbar-thumb: oklch(0.32 0.008 285);
+  --scrollbar-thumb-hover: oklch(0.5 0.05 180);
+
+  /* Apex brand tokens — emerald + teal + semantic accents */
+  --apex-emerald: oklch(0.69 0.16 162);
+  --apex-emerald-dim: oklch(0.52 0.12 162);
+  --apex-emerald-glow: oklch(0.69 0.16 162 / 18%);
+  --apex-teal: oklch(0.7 0.13 180);
+  --apex-teal-dim: oklch(0.52 0.11 180);
+  --apex-teal-glow: oklch(0.55 0.1 180 / 20%);
+  --apex-sky: oklch(0.68 0.13 230);
+  --apex-sky-glow: oklch(0.55 0.1 230 / 18%);
+  --apex-amber: oklch(0.78 0.14 75);
+  --apex-amber-glow: oklch(0.7 0.12 75 / 20%);
+  --apex-success: oklch(0.66 0.15 162);
+  --apex-success-fg: oklch(0.96 0.02 162);
+  --apex-warning: oklch(0.78 0.14 75);
+  --apex-warning-fg: oklch(0.2 0.04 75);
+  --apex-danger: oklch(0.65 0.18 25);
+  --apex-danger-fg: oklch(0.98 0.01 25);
+  --apex-violet: oklch(0.66 0.15 295);
+  --apex-violet-glow: oklch(0.55 0.1 295 / 18%);
+  --apex-surface-elevated: oklch(0.24 0.006 285);
+  /* Legacy alias kept so copied hotcol classes keep resolving (emerald now). */
+  --apex-gold: var(--apex-emerald);
+  --apex-gold-dim: var(--apex-emerald-dim);
+  --apex-gold-glow: var(--apex-emerald-glow);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: thin;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 32%, transparent);
+    color: var(--foreground);
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 999px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+    border: 2px solid var(--scrollbar-track);
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .dark .apex-canvas {
+    background-color: var(--background);
+    background-image:
+      radial-gradient(ellipse 120% 80% at 0% -15%, var(--apex-emerald-glow), transparent 55%),
+      radial-gradient(ellipse 90% 60% at 100% 0%, var(--apex-teal-glow), transparent 50%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, oklch(0.2 0.02 285 / 45%), transparent 60%);
+  }
+
+  .dark .apex-floating-inset {
+    background: linear-gradient(
+      145deg,
+      oklch(0.152 0.004 285) 0%,
+      oklch(0.145 0.004 285) 50%,
+      oklch(0.135 0.004 285 / 95%) 100%
+    );
+  }
+
+  @media (min-width: 768px) {
+    .dark .apex-floating-inset {
+      margin: 0.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid oklch(1 0 0 / 8%);
+      box-shadow:
+        0 8px 32px -12px oklch(0 0 0 / 55%),
+        0 0 0 1px oklch(1 0 0 / 4%);
+    }
+  }
+
+  .dark .apex-sidebar {
+    background-color: oklch(0.21 0.006 285);
+    background-image:
+      linear-gradient(180deg, oklch(0.23 0.006 285) 0%, oklch(0.19 0.006 285) 100%),
+      radial-gradient(circle at 0% 100%, var(--apex-emerald-glow), transparent 45%);
+    box-shadow:
+      inset -1px 0 0 oklch(0.55 0.01 285 / 14%),
+      4px 0 24px -8px oklch(0 0 0 / 35%);
+  }
+
+  .dark .apex-sidebar-header,
+  .dark .apex-sidebar-footer {
+    background: oklch(0 0 0 / 8%);
+  }
+
+  .dark .apex-topbar {
+    border-bottom: 1px solid oklch(0.55 0.01 285 / 20%);
+    background: oklch(0.16 0.004 285 / 88%);
+    backdrop-filter: blur(16px) saturate(1.2);
+    box-shadow: 0 1px 0 oklch(0.69 0.16 162 / 6%);
+  }
+
+  .dark .apex-icon-btn {
+    @apply rounded-lg border border-white/8 bg-white/4 text-muted-foreground;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.1s ease;
+  }
+
+  .dark .apex-icon-btn:hover:not(:disabled) {
+    @apply border-white/14 bg-white/8 text-foreground;
+  }
+
+  .dark .apex-icon-btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .dark .apex-alert-card {
+    @apply space-y-1.5 rounded-xl border p-3;
+    border-color: oklch(0.58 0.12 25 / 25%);
+    background: linear-gradient(
+      135deg,
+      oklch(0.58 0.12 25 / 12%) 0%,
+      oklch(0.21 0.006 285 / 50%) 100%
+    );
+  }
+
+  .dark .apex-page {
+    animation: apex-fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes apex-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .dark [data-slot="sidebar-menu-button"] {
+    cursor: pointer;
+    @apply rounded-lg text-[13px] transition-all duration-150;
+  }
+
+  .dark [data-slot="sidebar-menu-button"]:hover:not([data-active="true"]) {
+    background: oklch(0.24 0.008 285 / 80%) !important;
+    color: oklch(0.96 0.02 162) !important;
+  }
+
+  .dark .apex-nav-active {
+    background: linear-gradient(
+      90deg,
+      oklch(0.69 0.16 162 / 24%) 0%,
+      oklch(0.7 0.13 180 / 16%) 50%,
+      oklch(0.24 0.006 285 / 92%) 100%
+    ) !important;
+    color: oklch(0.98 0.003 285) !important;
+    box-shadow:
+      inset 3px 0 0 var(--apex-emerald),
+      0 1px 0 oklch(0 0 0 / 12%);
+  }
+
+  .dark .apex-nav-active svg {
+    color: var(--apex-teal) !important;
+  }
+
+  .dark .apex-nav-badge {
+    background: linear-gradient(135deg, var(--apex-emerald), var(--apex-teal));
+    color: oklch(0.14 0.02 162);
+    @apply min-w-5 justify-center font-semibold shadow-sm;
+  }
+
+  .dark .apex-user-card {
+    @apply rounded-xl border p-3;
+    border-color: oklch(0.5 0.05 162 / 18%);
+    background: linear-gradient(145deg, oklch(0.21 0.006 285) 0%, oklch(0.18 0.006 285) 100%);
+  }
+
+  .dark .apex-stat-card {
+    @apply relative overflow-hidden transition-all duration-200 ease-out;
+    background: linear-gradient(
+      160deg,
+      oklch(0.232 0.006 285) 0%,
+      oklch(0.198 0.006 285) 100%
+    );
+  }
+
+  .dark .apex-stat-topbar-gold {
+    background: linear-gradient(90deg, var(--apex-emerald), oklch(0.62 0.14 175));
+  }
+  .dark .apex-stat-topbar-teal {
+    background: linear-gradient(90deg, var(--apex-teal), oklch(0.62 0.12 180));
+  }
+  .dark .apex-stat-topbar-violet {
+    background: linear-gradient(90deg, var(--apex-violet), oklch(0.58 0.13 305));
+  }
+  .dark .apex-stat-topbar-emerald {
+    background: linear-gradient(90deg, var(--apex-emerald), oklch(0.58 0.12 162));
+  }
+  .dark .apex-stat-topbar-danger {
+    background: linear-gradient(90deg, var(--apex-danger), oklch(0.62 0.14 35));
+  }
+  .dark .apex-stat-topbar-amber {
+    background: linear-gradient(90deg, var(--apex-amber), oklch(0.72 0.12 55));
+  }
+
+  .dark a.apex-stat-card:hover,
+  .dark .apex-stat-card-interactive:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 16px 36px -14px oklch(0 0 0 / 55%),
+      0 0 0 1px oklch(0.68 0.13 180 / 18%);
+  }
+
+  .dark .apex-stat-card-attention {
+    box-shadow:
+      0 0 0 1px var(--apex-emerald-glow),
+      inset 0 1px 0 oklch(1 0 0 / 4%);
+  }
+
+  .dark .apex-stat-accent-gold {
+    box-shadow: inset 4px 0 0 var(--apex-emerald);
+  }
+  .dark .apex-stat-accent-teal {
+    box-shadow: inset 4px 0 0 var(--apex-teal);
+  }
+  .dark .apex-stat-accent-violet {
+    box-shadow: inset 4px 0 0 var(--apex-violet);
+  }
+  .dark .apex-stat-accent-success {
+    box-shadow: inset 4px 0 0 var(--apex-success);
+  }
+  .dark .apex-stat-accent-warning {
+    box-shadow: inset 4px 0 0 var(--apex-warning);
+  }
+  .dark .apex-stat-accent-danger {
+    box-shadow: inset 4px 0 0 var(--apex-danger);
+  }
+
+  .dark .apex-panel-surface {
+    border: 1px solid oklch(0.55 0.01 285 / 16%);
+    background: linear-gradient(
+      180deg,
+      oklch(0.205 0.006 285 / 98%) 0%,
+      oklch(0.185 0.006 285 / 95%) 100%
+    );
+    box-shadow:
+      0 4px 24px -8px oklch(0 0 0 / 45%),
+      inset 0 1px 0 oklch(1 0 0 / 4%);
+    @apply rounded-xl;
+  }
+
+  .dark .apex-hero-banner {
+    border: 1px solid oklch(0.55 0.05 162 / 22%);
+    background: linear-gradient(
+      125deg,
+      oklch(0.2 0.03 162 / 35%) 0%,
+      oklch(0.18 0.006 285) 45%,
+      oklch(0.16 0.03 200 / 40%) 100%
+    );
+    box-shadow:
+      0 8px 32px -12px oklch(0 0 0 / 50%),
+      inset 0 1px 0 oklch(1 0 0 / 6%);
+  }
+
+  .dark .apex-page-header {
+    border-bottom: 1px solid oklch(0.55 0.01 285 / 18%);
+    padding-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .dark .apex-page-header::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 4rem;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--apex-emerald), var(--apex-teal));
+  }
+
+  .dark .apex-table-wrap :is(thead tr) {
+    background: oklch(0.21 0.006 285 / 70%);
+    @apply border-b border-white/10;
+  }
+
+  .dark .apex-table-wrap :is(th) {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-muted-foreground;
+  }
+
+  .dark .apex-table-wrap :is(tbody tr) {
+    @apply border-b border-white/5 transition-colors duration-100;
+  }
+
+  .dark .apex-table-wrap :is(tbody tr:hover) {
+    background: oklch(0.232 0.008 285 / 55%);
+  }
+
+  .dark .apex-search-input {
+    @apply h-11 rounded-lg border-2 bg-background/50 text-[15px];
+    border-color: oklch(0.55 0.01 285 / 25%);
+    box-shadow: inset 0 1px 2px oklch(0 0 0 / 15%);
+  }
+
+  .dark .apex-search-input:focus-visible {
+    border-color: oklch(0.6 0.1 162 / 55%);
+    @apply ring-4 ring-[oklch(0.6_0.1_162/0.15)];
+  }
+
+  .dark .apex-tabs-list {
+    @apply h-11 gap-1 rounded-xl border-2 p-1;
+    border-color: oklch(0.55 0.01 285 / 22%);
+    background: oklch(0.185 0.006 285 / 80%);
+  }
+
+  .dark .apex-tabs-trigger {
+    cursor: pointer;
+    @apply rounded-lg font-medium transition-all duration-150;
+  }
+
+  .dark .apex-tabs-trigger[data-state="active"] {
+    @apply text-foreground shadow-md;
+    background: oklch(0.25 0.006 285);
+  }
+
+  .dark [cmdk-item] {
+    cursor: pointer;
+  }
+
+  .dark .apex-login-hero {
+    background-image:
+      linear-gradient(
+        155deg,
+        oklch(0.21 0.02 285) 0%,
+        oklch(0.19 0.055 162) 42%,
+        oklch(0.17 0.04 195) 100%
+      ),
+      radial-gradient(circle at 12% 88%, var(--apex-emerald-glow), transparent 48%),
+      radial-gradient(circle at 88% 12%, var(--apex-teal-glow), transparent 42%);
+  }
+
+  .apex-gradient-text {
+    @apply bg-linear-to-r from-[oklch(0.85_0.13_162)] via-[oklch(0.86_0.1_185)] to-[oklch(0.8_0.11_300)] bg-clip-text font-semibold text-transparent;
+  }
+
+  .dark .apex-glass-card {
+    border: 1px solid oklch(0.5 0.05 162 / 15%);
+    background: oklch(0.185 0.006 285 / 92%);
+    box-shadow:
+      0 12px 40px -16px oklch(0 0 0 / 55%),
+      inset 0 1px 0 oklch(1 0 0 / 5%);
+    @apply backdrop-blur-md;
+  }
+
+  .dark [data-slot="button"]:not(:disabled),
+  .dark a[data-slot="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  .dark .apex-table-wrap a[href] {
+    cursor: pointer;
+    @apply transition-colors duration-150;
+  }
+
+  .dark .apex-table-wrap a[href]:hover {
+    color: var(--apex-emerald);
+  }
+
+  .dark .apex-row-action {
+    @apply min-h-9 min-w-19 px-4 font-semibold;
+  }
+
+  .dark .apex-loading-screen {
+    background: var(--background);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% 40%, var(--apex-emerald-glow), transparent 70%);
+  }
+
+  .dark .apex-error-alert {
+    border-color: oklch(0.58 0.12 25 / 28%);
+    background: linear-gradient(
+      135deg,
+      oklch(0.58 0.12 25 / 10%) 0%,
+      oklch(0.19 0.006 285 / 80%) 100%
+    );
+    color: oklch(0.88 0.04 25);
+  }
+
+  .dark .apex-info-banner {
+    @apply rounded-xl border px-4 py-3.5;
+    border-color: oklch(0.6 0.1 200 / 22%);
+    background: linear-gradient(
+      135deg,
+      oklch(0.6 0.1 200 / 10%) 0%,
+      oklch(0.185 0.006 285 / 90%) 100%
+    );
+  }
+
+  .dark .apex-section-header h2 {
+    @apply relative pl-3;
+  }
+
+  .dark .apex-section-header h2::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.15em;
+    bottom: 0.15em;
+    width: 3px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--apex-emerald), var(--apex-teal));
+  }
+
+  .dark .apex-empty-icon {
+    @apply relative flex h-16 w-16 items-center justify-center rounded-2xl;
+    background: linear-gradient(
+      145deg,
+      oklch(0.232 0.006 285) 0%,
+      oklch(0.185 0.006 285) 100%
+    );
+    box-shadow:
+      0 0 0 1px oklch(0.5 0.05 162 / 15%),
+      0 8px 24px -8px oklch(0 0 0 / 40%);
+  }
+
+  .dark .apex-empty-icon::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      oklch(0.65 0.1 162 / 20%),
+      oklch(0.55 0.05 220 / 12%)
+    );
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    padding: 1px;
+    pointer-events: none;
+  }
+
+  .dark .apex-tenant-nav {
+    border: 1px solid oklch(0.55 0.01 285 / 18%);
+    border-radius: 1rem;
+    background: linear-gradient(
+      180deg,
+      oklch(0.185 0.006 285 / 92%) 0%,
+      oklch(0.16 0.006 285 / 96%) 100%
+    );
+    backdrop-filter: blur(16px);
+    box-shadow:
+      0 10px 32px -18px oklch(0 0 0 / 55%),
+      inset 0 1px 0 oklch(1 0 0 / 5%);
+    scrollbar-width: none;
+  }
+
+  .dark .apex-tenant-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dark .apex-tenant-tab-track {
+    width: 100%;
+  }
+
+  .dark .apex-tenant-nav-link {
+    @apply border border-transparent;
+  }
+
+  .dark .apex-tenant-nav-link:hover {
+    color: oklch(0.96 0.02 162);
+    background: oklch(0.24 0.008 285 / 70%);
+    border-color: oklch(0.55 0.01 285 / 20%);
+  }
+
+  .dark .apex-tenant-nav-link-active {
+    color: oklch(0.96 0.02 162);
+    background: linear-gradient(
+      180deg,
+      oklch(0.26 0.008 285 / 95%) 0%,
+      oklch(0.225 0.008 285 / 98%) 100%
+    );
+    border-color: oklch(0.6 0.1 162 / 28%);
+    box-shadow:
+      0 0 0 1px oklch(0.69 0.16 162 / 12%),
+      0 8px 20px -12px oklch(0.52 0.12 162 / 45%),
+      inset 0 1px 0 oklch(1 0 0 / 6%);
+  }
+
+  .dark .apex-tenant-nav-link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px oklch(0.69 0.16 162 / 35%);
+  }
+
+  .dark .apex-tenant-tab-panel {
+    animation: apex-fade-in 0.28s ease both;
+  }
+
+  @keyframes apex-cta-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 12px 28px -12px oklch(0.55 0.1 180 / 55%),
+        0 0 0 1px oklch(0.69 0.16 162 / 28%);
+    }
+    50% {
+      box-shadow:
+        0 16px 34px -10px oklch(0.55 0.1 180 / 75%),
+        0 0 0 1px oklch(0.69 0.16 162 / 42%),
+        0 0 24px -6px oklch(0.7 0.13 180 / 35%);
+    }
+  }
+
+  .dark .apex-chat-composer {
+    border-top: 1px solid oklch(0.55 0.01 285 / 16%);
+    background: linear-gradient(
+      180deg,
+      oklch(0.185 0.006 285 / 50%) 0%,
+      oklch(0.17 0.006 285 / 80%) 100%
+    );
+  }
+
+  .dark .apex-chat-bubble-apex {
+    background: linear-gradient(
+      135deg,
+      oklch(0.32 0.05 162) 0%,
+      oklch(0.27 0.04 162) 100%
+    );
+    box-shadow:
+      0 4px 12px -4px oklch(0 0 0 / 35%),
+      inset 0 1px 0 oklch(1 0 0 / 8%);
+  }
+
+  .dark .apex-chat-bubble-tenant {
+    background: oklch(0.21 0.006 285 / 85%);
+    box-shadow: inset 0 1px 0 oklch(1 0 0 / 4%);
+  }
+
+  .dark .apex-chat-date-divider {
+    @apply flex items-center gap-3 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground;
+  }
+
+  .dark .apex-chat-date-divider::before,
+  .dark .apex-chat-date-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: oklch(0.55 0.01 285 / 18%);
+  }
+
+  .dark .apex-loading-pulse {
+    animation: apex-pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes apex-pulse-glow {
+    0%,
+    100% {
+      opacity: 0.85;
+      filter: drop-shadow(0 0 8px oklch(0.6 0.1 162 / 25%));
+    }
+    50% {
+      opacity: 1;
+      filter: drop-shadow(0 0 16px oklch(0.6 0.1 162 / 40%));
+    }
+  }
+
+  .dark .apex-login-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at 30% 20%,
+      oklch(0.6 0.08 162 / 12%),
+      transparent 50%
+    );
+    pointer-events: none;
+  }
+
+  .dark .apex-inset-frame {
+    border: 1px solid oklch(1 0 0 / 8%);
+    border-radius: 1rem;
+    background: linear-gradient(
+      165deg,
+      oklch(0.19 0.006 285 / 72%) 0%,
+      oklch(0.16 0.004 285 / 45%) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 5%),
+      0 8px 32px -16px oklch(0 0 0 / 50%);
+    backdrop-filter: blur(8px);
+  }
+
+  @media (min-width: 768px) {
+    .dark .apex-inset-frame {
+      border-radius: 1.25rem;
+    }
+  }
+
+  .dark .apex-stat-stagger {
+    animation: apex-fade-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .dark .apex-hero-shimmer {
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      oklch(1 0 0 / 4%) 50%,
+      transparent 60%
+    );
+    background-size: 200% 100%;
+    animation: apex-shimmer 4s ease-in-out infinite;
+  }
+
+  @keyframes apex-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  .dark .apex-quick-actions-scroll {
+    scrollbar-width: none;
+  }
+
+  .dark .apex-quick-actions-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dark .apex-quick-pill-neutral:hover {
+    background: oklch(0.25 0.006 285 / 85%);
+    border-color: oklch(0.55 0.05 180 / 30%);
+  }
+
+  .dark .apex-quick-pill {
+    @apply inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-medium transition-all duration-200;
+    border-color: oklch(0.55 0.01 285 / 28%);
+    background: oklch(0.21 0.006 285 / 85%);
+    color: oklch(0.94 0.003 285);
+  }
+
+  .dark .apex-quick-pill:hover {
+    transform: translateY(-1px);
+    border-color: oklch(0.68 0.13 180 / 35%);
+    box-shadow: 0 8px 24px -10px oklch(0 0 0 / 50%);
+  }
+
+  .dark .apex-quick-pill-attention {
+    box-shadow:
+      0 0 0 1px var(--apex-teal-glow),
+      0 0 20px -6px var(--apex-emerald-glow);
+  }
+
+  .dark .apex-quick-pill-gold:hover {
+    color: oklch(0.94 0.03 162);
+    background: oklch(0.52 0.12 162 / 16%);
+    border-color: oklch(0.69 0.16 162 / 35%);
+  }
+
+  .dark .apex-quick-pill-teal:hover {
+    background: oklch(0.52 0.11 180 / 18%);
+    border-color: oklch(0.7 0.13 180 / 35%);
+  }
+
+  .dark .apex-quick-pill-violet:hover {
+    background: oklch(0.52 0.13 295 / 16%);
+    border-color: oklch(0.66 0.15 295 / 32%);
+  }
+
+  .dark .apex-empty-state {
+    @apply rounded-2xl border-2 border-dashed;
+    border-color: oklch(0.55 0.01 285 / 22%);
+    background: oklch(0.17 0.004 285 / 40%);
+  }
+
+  .dark .apex-cmdk-dialog {
+    border: 1px solid oklch(0.55 0.05 162 / 22%) !important;
+    background: oklch(0.17 0.006 285 / 98%) !important;
+    box-shadow:
+      0 24px 64px -16px oklch(0 0 0 / 65%),
+      0 0 0 1px oklch(0.55 0.05 162 / 10%) !important;
+  }
+
+  .dark .apex-cmdk-item[data-selected="true"] {
+    background: linear-gradient(
+      90deg,
+      oklch(0.55 0.1 162 / 18%) 0%,
+      oklch(0.24 0.006 285) 100%
+    ) !important;
+  }
+
+  .dark .apex-tenant-summary-strip {
+    box-shadow:
+      0 14px 40px -18px oklch(0 0 0 / 55%),
+      inset 0 1px 0 oklch(1 0 0 / 6%);
+  }
+
+  .dark .apex-table-skeleton tbody tr,
+  .dark .apex-table-skeleton > div > div:last-child > div {
+    animation: apex-fade-in 0.35s ease both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dark .apex-page {
+      animation: none;
+    }
+    .dark [data-slot="button"]:active {
+      transform: none;
+    }
+    .dark a.apex-stat-card:hover,
+    .dark .apex-stat-card-interactive:hover {
+      transform: none;
+    }
+    .dark .apex-loading-pulse {
+      animation: none;
+    }
+    .dark .apex-hero-shimmer {
+      animation: none;
+    }
+    .dark .apex-stat-stagger {
+      animation: none;
+    }
+    .dark .apex-quick-pill:hover {
+      transform: none;
+    }
+    .dark [class*="animate-[apex-cta-glow"] {
+      animation: none !important;
+    }
+    .dark .apex-table-row {
+      animation: none;
+    }
+    .dark .apex-insight-card {
+      animation: none;
+    }
+  }
+
+  .dark .apex-chart-card {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .dark .apex-chart-card:hover {
+    box-shadow: 0 8px 32px -12px oklch(0 0 0 / 45%);
+    border-color: oklch(0.68 0.13 180 / 18%);
+  }
+
+  .dark .apex-health-card {
+    background: linear-gradient(
+      135deg,
+      oklch(0.232 0.006 285) 0%,
+      oklch(0.21 0.02 185 / 90%) 50%,
+      oklch(0.198 0.006 285) 100%
+    );
+  }
+
+  .dark .apex-insight-card {
+    animation: apex-fade-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .dark .apex-table-row {
+    animation: apex-fade-in 0.35s ease both;
+  }
+
+  .dark .apex-tenant-summary {
+    background: linear-gradient(135deg, oklch(0.225 0.006 285 / 80%) 0%, oklch(0.205 0.006 285) 100%);
+  }
+
+  .dark .apex-health-pill:hover {
+    box-shadow: 0 0 20px -4px oklch(0.55 0.1 180 / 35%);
+  }
+
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke-opacity: 0.4;
+  }
+
+  .recharts-surface {
+    outline: none;
+  }
 }

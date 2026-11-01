@@ -1,69 +1,47 @@
-import Image from "next/image";
+import { ApexLoginForm } from "@/components/apex/ApexLoginForm";
+import { ApexLogo } from "@/components/apex/ApexLogo";
 
-export default function Home() {
+export default function LoginPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex min-h-svh flex-col lg:flex-row">
+      <section className="apex-login-hero relative flex flex-1 flex-col justify-between overflow-hidden p-8 text-white lg:max-w-[48%] lg:p-12">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-30 mix-blend-overlay"
+          style={{
+            backgroundImage: "url('/assets/signup.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+        <div className="relative z-10 flex items-center gap-4">
+          <ApexLogo size={56} priority className="drop-shadow-[0_0_24px_oklch(0.68_0.13_180/0.45)]" />
+          <div>
+            <p className="text-lg font-bold tracking-tight">Apex Solution</p>
+            <p className="text-sm text-white/80">VoloSync operations</p>
+          </div>
+        </div>
+        <div className="relative z-10 mt-16 max-w-md space-y-5 lg:mt-0">
+          <p className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
+            Operations console
+          </p>
+          <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+            Manage every wholesaler from one colorful, focused command center
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-base text-pretty text-white/90 sm:text-lg">
+            Approve payments, review subscriptions, handle module requests, and monitor
+            access — a warm, precise workspace built for daily operations.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <p className="relative z-10 mt-8 text-xs text-white/55">
+          Authorized Apex operations only
+        </p>
+      </section>
+
+      <section className="flex flex-1 items-center justify-center bg-muted/30 p-6 sm:p-10 dark:bg-[oklch(0.14_0.02_265)]">
+        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both">
+          <ApexLoginForm />
         </div>
-      </main>
+      </section>
     </div>
   );
 }

@@ -1,0 +1,199 @@
+▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://172.19.128.1:3001
+✓ Ready in 19.3s
+✓ Running next.config.ts took 2.3s
+⚠ Slow filesystem detected. The benchmark took 462ms. If \\?\C:\Users\abdur\Documents\Projects\volosync-admin\.next\dev is a network drive, consider moving it to a local folder.
+See more: https://nextjs.org/docs/app/guides/local-development
+- Cache Components enabled
+- Partial Prefetching enabled
+- Experiments (use with caution):
+  ✓ agentFeedback
+
+○ Compiling / ...
+ GET / 200 in 3.2s (next.js: 2.5s, application-code: 663ms)
+ GET / 200 in 474ms (next.js: 14ms, application-code: 460ms)
+⚠ Blocked cross-origin request to Next.js dev resource /_next/hmr from "127.0.0.1".
+Cross-origin access to Next.js dev resources is blocked by default for safety.
+
+To allow this host in development, add it to "allowedDevOrigins" in next.config.js and restart the dev server:
+
+// next.config.js
+module.exports = {
+  allowedDevOrigins: ['127.0.0.1'],
+}
+
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ GET /? 200 in 323ms (next.js: 20ms, application-code: 303ms)
+ GET /? 200 in 517ms (next.js: 6ms, application-code: 510ms)
+ GET /? 200 in 452ms (next.js: 15ms, application-code: 437ms)
+ GET /? 200 in 305ms (next.js: 6ms, application-code: 299ms)
+ GET / 200 in 157ms (next.js: 7ms, application-code: 151ms)
+ GET / 200 in 6.8s (next.js: 181ms, application-code: 6.6s)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html
+                          lang="en"
++                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+-                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+-                         foxified-bridged=""
+-                         foxified=""
+-                         style={{color-scheme:"dark"}}
+                        >
+                  ...
+ 
+    at <unknown> (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96352)
+    at d (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96462)
+    at f (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96563) (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96352)
+✓ Finished filesystem cache database compaction in 11.1s
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'replace')
+    at <unknown> (app/admin-client.tsx:409:52)
+    at Array.map (<anonymous>)
+    at AdminHome (app/admin-client.tsx:391:28)
+    at <unknown> (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96352)
+    at d (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96462)
+    at f (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96563)
+    at Page (app\page.tsx:4:10)
+  407 |                         )}
+  408 |                       >
+> 409 |                         {tenant.subscription_state.replace("_", " ")}
+      |                                                    ^
+  410 |                       </span>
+  411 |                       <Button
+  412 |                         size="sm"
+✓ Compiled in 5.1s
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET / 200 in 1407ms (next.js: 408ms, application-code: 999ms)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html
+                          lang="en"
++                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+-                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+-                         foxified-bridged=""
+-                         foxified=""
+-                         style={{color-scheme:"dark"}}
+                        >
+                  ...
+ 
+    at <unknown> (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96352)
+    at d (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96462)
+    at f (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96563) (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96352)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'replace')
+    at <unknown> (app/admin-client.tsx:434:52)
+    at Array.map (<anonymous>)
+    at AdminHome (app/admin-client.tsx:416:28)
+    at <unknown> (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96352)
+    at d (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96462)
+    at f (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96563)
+    at Page (app\page.tsx:4:10)
+  432 |                         )}
+  433 |                       >
+> 434 |                         {tenant.subscription_state.replace("_", " ")}
+      |                                                    ^
+  435 |                       </span>
+  436 |                       <Button
+  437 |                         size="sm"
+ GET / 200 in 1123ms (next.js: 185ms, application-code: 938ms)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html
+                          lang="en"
++                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+-                         className="h-full antialiased geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-mo..."
+-                         foxified-bridged=""
+-                         foxified=""
+-                         style={{color-scheme:"dark"}}
+                        >
+                  ...
+ 
+    at <unknown> (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96352)
+    at d (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96462)
+    at f (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96563) (chrome-extension://cldmemdnllncchfahbcnjijheaolemfk/assets/js/ff-content.js:13:96352)
+✓ Compiled in 1203ms
+✓ Compiled in 2.9s
+  Turbopack has seen frequent file updates and is waiting for the filesystem to settle (0.5s elapsed so far; last modified: "\\\\?\\C:\\Users\\abdur\\Documents\\Projects\\volosync-admin\\node_modules\\proxy-from-env").
+ GET / 200 in 938ms (next.js: 110ms, application-code: 828ms)
+  Turbopack has seen frequent file updates and is waiting for the filesystem to settle (0.5s elapsed so far; last modified: "\\\\?\\C:\\Users\\abdur\\Documents\\Projects\\volosync-admin\\node_modules\\next\\dist\\compiled\\native-url").
+  Turbopack has seen frequent file updates and is waiting for the filesystem to settle (0.5s elapsed so far; last modified: "\\\\?\\C:\\Users\\abdur\\Documents\\Projects\\volosync-admin\\node_modules\\next\\dist\\diagnostics").
