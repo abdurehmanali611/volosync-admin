@@ -9,7 +9,7 @@ import {
 export const ADMIN_API_BASE = (
   process.env.NEXT_PUBLIC_API_URL ??
   process.env.NEXT_PUBLIC_ADMIN_API_URL ??
-  "http://127.0.0.1:8000"
+  "https://volosync-flsh.vercel.app"
 ).replace(/\/+$/, "");
 
 export class ApiError extends Error {

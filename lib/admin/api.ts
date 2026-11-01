@@ -3,7 +3,7 @@ import { getApexToken, setApexToken } from "./session";
 export const BASE = (
   process.env.NEXT_PUBLIC_API_URL ??
   process.env.NEXT_PUBLIC_ADMIN_API_URL ??
-  "http://127.0.0.1:8000"
+  "https://volosync-flsh.vercel.app"
 ).replace(/\/+$/, "");
 
 /** Token storage delegated to `lib/admin/session.ts` (keys `vs_auth_token`/`vs_member`). */
