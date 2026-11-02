@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import LoginPage from "./page";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ApexBareRouteOnly } from "@/components/apex/ApexBareRoutes";
 import { ApexRootLayout } from "@/components/apex/ApexRootLayout";
 
 const geistSans = Geist({
@@ -35,7 +37,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           disableTransitionOnChange
         >
           <TooltipProvider>
+            {/* Page content — every route, wrapped in the console shell. */}
             <ApexRootLayout>{children}</ApexRootLayout>
+            {/* Login page — bare, and rendered here because the shell
+                wrapper above needs `children`. */}
+            <ApexBareRouteOnly>
+              <LoginPage />
+            </ApexBareRouteOnly>
             <Toaster
               position="top-right"
               richColors

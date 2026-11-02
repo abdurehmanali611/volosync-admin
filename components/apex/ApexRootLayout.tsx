@@ -1,14 +1,16 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { type ReactNode } from "react";
 import { ApexAppLayout } from "@/components/apex/ApexAppLayout";
 
-/** Wraps authenticated routes in the Apex shell; `/` stays bare for sign-in. */
+/**
+ * Wraps the console routes in the Apex shell.
+ *
+ * This deliberately does NOT call `usePathname()`: the root layout is shared
+ * by every route, including `/tenants/[id]`, and a pathname read there
+ * suspends prerendering for unknown dynamic params (`CLIENT_HOOK_DYNAMIC`).
+ * The bare-vs-shell decision lives in the per-route layouts instead.
+ */
 export function ApexRootLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  if (pathname === "/") {
-    return <>{children}</>;
-  }
   return <ApexAppLayout>{children}</ApexAppLayout>;
 }
