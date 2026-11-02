@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { ApexLoginChrome } from "@/components/apex/ApexChrome";
 
 /**
- * The sign-in route (`/`). Its pathname is static, so the check inside
- * `ApexLoginChrome` resolves during prerendering — no build-time suspension.
+ * The sign-in route renders bare — no shell, no chrome, no pathname check.
+ * The route group decides; nothing reads the URL.
  */
 export default function LoginLayout({ children }: { children: ReactNode }) {
-  return <ApexLoginChrome>{children}</ApexLoginChrome>;
+  return <>{children}</>;
 }

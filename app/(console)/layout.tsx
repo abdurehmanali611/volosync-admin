@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
-import { ApexConsoleChrome } from "@/components/apex/ApexChrome";
+import { ApexRootLayout } from "@/components/apex/ApexRootLayout";
 
 /**
- * Every console route. The pathname check + Suspense boundary live here —
- * below `/tenants/[id]`'s dynamic segment, which is where the route's own
- * pages (and its `useSearchParams()` consumers) actually render.
+ * Every console route renders inside the Apex shell.
+ *
+ * No `usePathname()` here — the route group *is* the decision. That also means
+ * nothing above `/tenants/[id]`'s dynamic segment reads the pathname, which is
+ * what broke prerendering (`CLIENT_HOOK_DYNAMIC`) when the root layout did it.
  */
 export default function ConsoleLayout({ children }: { children: ReactNode }) {
-  return <ApexConsoleChrome>{children}</ApexConsoleChrome>;
+  return <ApexRootLayout>{children}</ApexRootLayout>;
 }

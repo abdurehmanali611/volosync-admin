@@ -5,7 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ApexRootLayout } from "@/components/apex/ApexRootLayout";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,11 +26,11 @@ export const metadata: Metadata = {
 /**
  * Root layout — `<html>`/`<body>` and app-wide providers only.
  *
- * It must stay free of `usePathname()`/`useSearchParams()`: this layout wraps
- * `/tenants/[id]`, whose param isn't known at build time, and a client-router
- * read here blocks prerendering (`CLIENT_HOOK_DYNAMIC`). Shell vs. bare
- * routing is handled by `ApexConsoleChrome` / `ApexLoginChrome` in the
- * `(console)` and `(login)` layouts.
+ * It renders no chrome of its own: the console shell lives in
+ * `app/(console)/layout.tsx` and the sign-in page in `app/(login)/`. Keeping
+ * the shell out of here means no route below gets extra providers or a
+ * Suspense boundary it didn't ask for — and nothing above `/tenants/[id]`
+ * reads the pathname, which would block its prerendering.
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           disableTransitionOnChange
         >
           <TooltipProvider>
-            <ApexRootLayout>{children}</ApexRootLayout>
+            {children}
             <Toaster
               position="top-right"
               richColors
