@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import LoginPage from "./page";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ApexBareRouteOnly } from "@/components/apex/ApexBareRoutes";
 import { ApexRootLayout } from "@/components/apex/ApexRootLayout";
 
 const geistSans = Geist({
@@ -24,7 +23,16 @@ export const metadata: Metadata = {
     "Apex operations console for VoloSync — tenants, payments, modules, and analytics in one place.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+/**
+ * Root layout — `<html>`/`<body>` and app-wide providers only.
+ *
+ * It must stay free of `usePathname()`/`useSearchParams()`: this layout wraps
+ * `/tenants/[id]`, whose param isn't known at build time, and a client-router
+ * read here blocks prerendering (`CLIENT_HOOK_DYNAMIC`). Shell vs. bare
+ * routing is handled by `ApexConsoleChrome` / `ApexLoginChrome` in the
+ * `(console)` and `(login)` layouts.
+ */
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -37,13 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           disableTransitionOnChange
         >
           <TooltipProvider>
-            {/* Page content — every route, wrapped in the console shell. */}
             <ApexRootLayout>{children}</ApexRootLayout>
-            {/* Login page — bare, and rendered here because the shell
-                wrapper above needs `children`. */}
-            <ApexBareRouteOnly>
-              <LoginPage />
-            </ApexBareRouteOnly>
             <Toaster
               position="top-right"
               richColors

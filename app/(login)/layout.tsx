@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { ApexBareRouteOnly } from "@/components/apex/ApexBareRoutes";
+import { ApexLoginChrome } from "@/components/apex/ApexChrome";
 
 /**
- * Layout for the sign-in route only. Its pathname (`/`) is static, so the
- * bare-route check here never blocks prerendering.
+ * The sign-in route (`/`). Its pathname is static, so the check inside
+ * `ApexLoginChrome` resolves during prerendering — no build-time suspension.
  */
 export default function LoginLayout({ children }: { children: ReactNode }) {
-  return <ApexBareRouteOnly>{children}</ApexBareRouteOnly>;
+  return <ApexLoginChrome>{children}</ApexLoginChrome>;
 }

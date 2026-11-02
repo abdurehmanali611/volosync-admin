@@ -1,14 +1,11 @@
 import type { ReactNode } from "react";
-import { ApexBareRouteGate } from "@/components/apex/ApexBareRoutes";
+import { ApexConsoleChrome } from "@/components/apex/ApexChrome";
 
 /**
- * Layout for every Apex console route (everything except the login page).
- *
- * Kept separate from the root layout so the bare-route check — which reads
- * `usePathname()` — only covers routes under here. A pathname read in the
- * root layout would block prerendering of `/tenants/[id]`, whose dynamic
- * param isn't known at build time.
+ * Every console route. The pathname check + Suspense boundary live here —
+ * below `/tenants/[id]`'s dynamic segment, which is where the route's own
+ * pages (and its `useSearchParams()` consumers) actually render.
  */
 export default function ConsoleLayout({ children }: { children: ReactNode }) {
-  return <ApexBareRouteGate>{children}</ApexBareRouteGate>;
+  return <ApexConsoleChrome>{children}</ApexConsoleChrome>;
 }
