@@ -66,6 +66,7 @@ export default function TenantDetailPage() {
   }, [tin]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void reload().catch((e) =>
       toast.error(e instanceof Error ? e.message : "Load failed"),
     );

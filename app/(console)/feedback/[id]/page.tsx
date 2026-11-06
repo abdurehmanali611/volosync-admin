@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Loader2, MessageCircle, Send } from "lucide-react";
+import { ImagePlus, Loader2, MessageCircle, Send, X } from "lucide-react";
 import { closeFeedbackThread, fetchFeedbackThread, sendApexFeedback } from "@/lib/apex/actions";
+import {
+  isCloudinaryUploadConfigured,
+  uploadImageFileToCloudinary,
+} from "@/lib/cloudinaryUploadOptions";
 import { ApexFeedbackTenantContext } from "@/components/apex/feedback/ApexFeedbackTenantContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +19,9 @@ import { ApexPageHeader } from "@/components/apex/layout/ApexPageHeader";
 import { ApexPanel } from "@/components/apex/layout/ApexPanel";
 import { ApexEmptyState } from "@/components/apex/layout/ApexEmptyState";
 import { cn } from "@/lib/utils";
+
+const CHAT_MAX_IMAGES = 5;
+const CHAT_IMAGE_ACCEPT = "image/png,image/jpeg,image/jpg,image/webp,image/jfif";
 
 function formatDateLabel(iso: string): string {
   const d = new Date(iso);
@@ -37,7 +44,11 @@ export default function FeedbackThreadPage() {
   const [thread, setThread] = useState<Awaited<ReturnType<typeof fetchFeedbackThread>> | null>(null);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const load = () => fetchFeedbackThread(threadId).then(setThread);
 
@@ -51,26 +62,84 @@ export default function FeedbackThreadPage() {
     }
   }, [thread?.messages.length]);
 
-  const messagesWithDividers = useMemo(() => {
-    if (!thread?.messages.length) return [];
-    let lastDate = "";
-    return thread.messages.map((msg) => {
-      const dateLabel = formatDateLabel(msg.createdAt);
-      const showDivider = dateLabel !== lastDate;
-      lastDate = dateLabel;
-      return { msg, showDivider, dateLabel };
-    });
-  }, [thread?.messages]);
+  let lastDate = "";
+  const messagesWithDividers = (thread?.messages ?? []).map((msg) => {
+    const dateLabel = formatDateLabel(msg.createdAt);
+    const showDivider = dateLabel !== lastDate;
+    lastDate = dateLabel;
+    return { msg, showDivider, dateLabel };
+  });
+
+  const atImageLimit = pendingImages.length >= CHAT_MAX_IMAGES;
+  const canSend = Boolean(draft.trim() || pendingImages.length) && !sending && !uploading;
+
+  const removePendingImage = (index: number) => {
+    setPendingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleImageFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (!files.length) return;
+    if (!isCloudinaryUploadConfigured()) {
+      toast.error("Image upload is not configured.");
+      return;
+    }
+
+    const slotsLeft = CHAT_MAX_IMAGES - pendingImages.length;
+    if (slotsLeft <= 0) {
+      toast.error(`Up to ${CHAT_MAX_IMAGES} images per message`);
+      return;
+    }
+    const images = files.filter((file) => file.type.startsWith("image/"));
+    if (images.length !== files.length) {
+      toast.error("Only image files can be attached");
+    }
+    if (images.length > slotsLeft) {
+      toast.error(`Only ${slotsLeft} more image${slotsLeft === 1 ? "" : "s"} can be attached`);
+    }
+    const batch = images.slice(0, slotsLeft);
+    if (!batch.length) return;
+
+    setUploading(true);
+    const uploaded: string[] = [];
+    try {
+      for (let i = 0; i < batch.length; i += 1) {
+        setUploadProgress(`Uploading ${i + 1}/${batch.length}…`);
+        uploaded.push(
+          await uploadImageFileToCloudinary(batch[i], { folder: "volosync-apex-chat" }),
+        );
+      }
+      setPendingImages((prev) => [...prev, ...uploaded].slice(0, CHAT_MAX_IMAGES));
+    } catch (e) {
+      if (uploaded.length) {
+        setPendingImages((prev) => [...prev, ...uploaded].slice(0, CHAT_MAX_IMAGES));
+      }
+      toast.error(e instanceof Error ? e.message : "Image upload failed");
+    } finally {
+      setUploading(false);
+      setUploadProgress("");
+    }
+  };
 
   const handleSend = async () => {
     const text = draft.trim();
-    if (!text) return;
+    const images = pendingImages;
+    if ((!text && !images.length) || sending || uploading) return;
     setSending(true);
     try {
-      await sendApexFeedback(threadId, text);
+      if (images.length) {
+        // One bubble per image; the caption rides on the first.
+        for (let i = 0; i < images.length; i += 1) {
+          await sendApexFeedback(threadId, i === 0 ? text : "", images[i]);
+        }
+      } else {
+        await sendApexFeedback(threadId, text);
+      }
       setDraft("");
+      setPendingImages([]);
       await load();
-      toast.success("Message sent");
+      toast.success(images.length > 1 ? "Messages sent" : "Message sent");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Send failed");
     } finally {
@@ -187,37 +256,101 @@ export default function FeedbackThreadPage() {
             )}
           </div>
 
-          <div className="apex-chat-composer flex gap-3 p-4 sm:p-5">
-            <Textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="Write a message… (Enter to send, Shift+Enter for new line)"
-              rows={2}
-              disabled={sending}
-              className="min-h-[48px] resize-none border-white/10 bg-background/80 focus-visible:ring-[oklch(0.65_0.05_85/0.25)]"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void handleSend();
+          <div className="apex-chat-composer flex flex-col gap-3 p-4 sm:p-5">
+            {pendingImages.length ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {pendingImages.map((url, index) => (
+                  <div key={url} className="relative">
+                    <Image
+                      src={url}
+                      alt={`Attachment ${index + 1}`}
+                      width={80}
+                      height={80}
+                      className="h-16 w-16 rounded-lg border border-white/10 object-cover"
+                      unoptimized
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remove image"
+                      disabled={sending}
+                      onClick={() => removePendingImage(index)}
+                      className="absolute -top-1.5 -right-1.5 grid h-5 w-5 place-items-center rounded-full bg-destructive text-white shadow-md transition hover:scale-105 disabled:opacity-50"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                  {pendingImages.length}/{CHAT_MAX_IMAGES}
+                </span>
+              </div>
+            ) : null}
+
+            <div className="flex gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={CHAT_IMAGE_ACCEPT}
+                multiple
+                className="sr-only"
+                tabIndex={-1}
+                aria-hidden
+                onChange={(event) => void handleImageFileChange(event)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="h-auto shrink-0 border-white/10 px-3"
+                disabled={sending || uploading || atImageLimit}
+                title={
+                  atImageLimit ? `Up to ${CHAT_MAX_IMAGES} images per message` : "Attach images"
                 }
-              }}
-            />
-            <Button
-              variant="apex"
-              size="lg"
-              className="h-auto shrink-0 px-5"
-              disabled={!draft.trim() || sending}
-              onClick={() => void handleSend()}
-            >
-              {sending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Send
-                </>
-              )}
-            </Button>
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ImagePlus className="h-4 w-4" />
+                )}
+              </Button>
+              <Textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="Write a message… (Enter to send, Shift+Enter for new line)"
+                rows={2}
+                disabled={sending}
+                className="min-h-[48px] resize-none border-white/10 bg-background/80 focus-visible:ring-[oklch(0.65_0.05_85/0.25)]"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void handleSend();
+                  }
+                }}
+              />
+              <Button
+                variant="apex"
+                size="lg"
+                className="h-auto shrink-0 px-5"
+                disabled={!canSend}
+                onClick={() => void handleSend()}
+              >
+                {sending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground">
+              {uploading
+                ? uploadProgress
+                : `Up to ${CHAT_MAX_IMAGES} images · Enter to send · Shift+Enter for new line`}
+            </p>
           </div>
         </ApexPanel>
         <ApexFeedbackTenantContext tinNumber={thread.tinNumber} />

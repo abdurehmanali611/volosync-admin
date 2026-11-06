@@ -31,19 +31,11 @@ export function ApexStartChatDialog({ defaultTin, onDone, trigger }: Props) {
   const [open, setOpen] = useState(false);
   const [loadingTenants, setLoadingTenants] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [tin, setTin] = useState("");
+  const [tin, setTin] = useState(defaultTin ?? "");
   const [message, setMessage] = useState("");
   const [options, setOptions] = useState<
     { tinNumber: string; hotelDisplayName: string }[]
   >([]);
-
-  useEffect(() => {
-    if (defaultTin) setTin(defaultTin);
-  }, [defaultTin]);
-
-  useEffect(() => {
-    if (open && defaultTin) setTin(defaultTin);
-  }, [open, defaultTin]);
 
   useEffect(() => {
     if (!open) return;
@@ -101,7 +93,13 @@ export function ApexStartChatDialog({ defaultTin, onDone, trigger }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (next && defaultTin) setTin(defaultTin);
+      }}
+    >
       <DialogTrigger asChild>
         {trigger ?? (
           <Button variant="apex" size="default" className="gap-2">

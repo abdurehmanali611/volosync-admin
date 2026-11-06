@@ -1286,9 +1286,9 @@ export async function fetchFeedbackThread(threadId: number): Promise<FeedbackThr
   };
 }
 
-export async function sendApexFeedback(threadId: number, body: string) {
+export async function sendApexFeedback(threadId: number, body: string, imageUrl?: string) {
   const tenantId = await tenantIdOfThread(threadId);
-  await apexPost(`/api/chat/threads/${tenantId}`, { body });
+  await apexPost(`/api/chat/threads/${tenantId}`, { body, image_url: imageUrl || "" });
   invalidateApexCaches("apex:feedback");
   invalidateApexCaches("apex:summary");
 }

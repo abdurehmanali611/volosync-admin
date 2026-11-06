@@ -23,6 +23,7 @@ export function useSignupPricing(
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPricing((prev) => ({ ...prev, loading: true }));
     void fetchSignupPricingPreview(businessType, modules).then((result) => {
       if (!cancelled) {
