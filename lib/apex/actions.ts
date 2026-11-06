@@ -65,7 +65,7 @@ function subscriptionStanding(billingState: unknown, subscriptionState: unknown)
 const upper = (value: unknown): string => str(value).trim().toUpperCase();
 
 /** `APPROVED` → `approved` — the casing every table filter matches on. */
-const reviewStatus = (value: unknown): string => {
+const reviewStatus = (value: unknown): SignupReviewStatus => {
   const raw = lower(value);
   if (raw.startsWith("approv") || raw === "paid") return "approved";
   if (raw.startsWith("reject") || raw === "declined" || raw === "denied") return "rejected";
@@ -214,6 +214,7 @@ export type TenantPaymentRow = {
   status: string;
   transactionRef: string;
   submittedAt: string;
+  years?: number;
 };
 
 export type TenantDetail = {
@@ -267,6 +268,11 @@ export type TenantDetail = {
     paymentsCount: number;
     setupPaymentsCount: number;
     moduleRequestsCount: number;
+    pendingPurchaseRequests?: number;
+    pendingStockOutRequests?: number;
+    pendingItemRegistrations?: number;
+    openOrders?: number;
+    ordersToday?: number;
   };
   chat: {
     threadId: number | null;
@@ -809,7 +815,7 @@ function mapTenantDetail(
     paymentChannel: null,
     paymentTransactionRef: str(row.subscription_transaction_id) || null,
     planName: row.plan ? str(row.plan) : null,
-    ownerUserName: str(row.owner_username ?? row.owner?.username ?? ""),
+    ownerUserName: str(row.owner_username ?? ((row.owner ?? {}) as Json).username ?? ""),
     phone: str(row.phone),
     address: str(row.address),
     vatRate: n(row.vat_rate),
@@ -1297,13 +1303,13 @@ export async function startApexChatWithTenant(tinNumber: string, body: string) {
   const text = body.trim();
   if (!text) throw new Error("Opening message is required");
   const tenantId = await resolveTenantId(tinNumber);
-  const created = await apexPost<{ thread: Json }>("/api/chat/threads", {
+  const created = await apexPost<Json>("/api/chat/threads", {
     tenant: tenantId,
     body: text,
   });
   invalidateApexCaches("apex:feedback");
   invalidateApexCaches("apex:summary");
-  return { id: n(created?.thread?.id ?? created?.id), tenantId };
+  return { id: n((created?.thread as Json | undefined)?.id ?? created?.id), tenantId };
 }
 
 export type BroadcastChatResult = {
@@ -1725,7 +1731,7 @@ export async function apexCreateTenant(
     ownerRole: "OWNER",
     setupFeeETB: n(created.setup_fee),
     setupFeeApproved: Boolean(input.confirmPaymentReceived),
-    userId: n(created.owner?.id ?? created.user_id),
+    userId: n((created.owner as Json | undefined)?.id ?? created.user_id),
   };
 }
 

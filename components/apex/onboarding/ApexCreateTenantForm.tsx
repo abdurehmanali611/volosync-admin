@@ -33,7 +33,6 @@ import {
   ApexCreateTenantSchema,
   type ApexCreateTenantFormValues,
 } from "@/lib/validations/apexCreateTenant";
-import { uploadSignupImage } from "@/lib/signup/upload";
 import {
   apexCreateTenant,
   fetchApexSalesAgents,
@@ -72,7 +71,6 @@ type Props = {
 
 export function ApexCreateTenantForm({ onCreated, onNavigateWithoutOwner }: Props) {
   const router = useRouter();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [confirmPaymentReceived, setConfirmPaymentReceived] = useState(true);
   const [isIllustrationTenant, setIsIllustrationTenant] = useState(false);
@@ -283,10 +281,6 @@ export function ApexCreateTenantForm({ onCreated, onNavigateWithoutOwner }: Prop
             fieldType={formFieldTypes.IMAGE_UPLOADER}
             label="Business logo"
             placeholder="Upload logo"
-            previewUrl={previewUrl}
-            handleCloudinary={(result) =>
-              uploadSignupImage(result, form, setPreviewUrl, "LogoUrl")
-            }
           />
         </SignupSection>
 

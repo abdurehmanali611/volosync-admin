@@ -237,27 +237,27 @@ export function aggregateTenantOpsBars(
     },
     {
       label: "Orders",
-      value: snapshot.ordersToday,
+      value: snapshot.ordersToday ?? 0,
       color: CHART_COLORS.gold,
     },
     {
       label: "Open",
-      value: snapshot.openOrders,
+      value: snapshot.openOrders ?? 0,
       color: CHART_COLORS.sky,
     },
     {
       label: "PRs",
-      value: snapshot.pendingPurchaseRequests,
+      value: snapshot.pendingPurchaseRequests ?? 0,
       color: CHART_COLORS.amber,
     },
     {
       label: "Stock",
-      value: snapshot.pendingStockOutRequests,
+      value: snapshot.pendingStockOutRequests ?? 0,
       color: CHART_COLORS.violet,
     },
     {
       label: "Items",
-      value: snapshot.pendingItemRegistrations,
+      value: snapshot.pendingItemRegistrations ?? 0,
       color: CHART_COLORS.emerald,
     },
   ];
