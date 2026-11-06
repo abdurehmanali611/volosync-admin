@@ -4,34 +4,34 @@ import Link from "next/link";
 import { Activity, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { DashboardSummary, TenantListItem } from "@/lib/admin/dashboard";
-import { computePortfolioHealthScore } from "@/lib/admin/dashboard";
+import type { DashboardSummary, TenantListItem } from "@/lib/apex/actions";
+import { computePortfolioHealthScore } from "@/lib/apex/analytics";
 
 const GRADE_COLORS: Record<string, { ring: string; text: string; bar: string }> = {
   A: {
-    ring: "ring-[oklch(0.6_0.12_155/0.45)]",
+    ring: "ring-[oklch(0.55_0.12_155/0.45)]",
     text: "text-[oklch(0.92_0.04_155)]",
-    bar: "bg-[oklch(0.6_0.12_155)]",
+    bar: "bg-[oklch(0.55_0.12_155)]",
   },
   B: {
-    ring: "ring-[oklch(0.68_0.13_180/0.4)]",
-    text: "text-[oklch(0.92_0.04_180)]",
-    bar: "bg-[oklch(0.68_0.13_180)]",
+    ring: "ring-[oklch(0.55_0.1_195/0.4)]",
+    text: "text-[oklch(0.92_0.04_195)]",
+    bar: "bg-[oklch(0.55_0.1_195)]",
   },
   C: {
-    ring: "ring-[oklch(0.65_0.12_75/0.4)]",
+    ring: "ring-[oklch(0.65_0.1_75/0.4)]",
     text: "text-[oklch(0.92_0.05_75)]",
-    bar: "bg-[oklch(0.65_0.12_75)]",
+    bar: "bg-[oklch(0.65_0.1_75)]",
   },
   D: {
-    ring: "ring-[oklch(0.6_0.12_25/0.35)]",
+    ring: "ring-[oklch(0.58_0.12_25/0.35)]",
     text: "text-[oklch(0.92_0.04_25)]",
-    bar: "bg-[oklch(0.6_0.12_25)]",
+    bar: "bg-[oklch(0.58_0.12_25)]",
   },
   F: {
-    ring: "ring-[oklch(0.62_0.16_25/0.45)]",
+    ring: "ring-[oklch(0.58_0.14_25/0.45)]",
     text: "text-[oklch(0.94_0.04_25)]",
-    bar: "bg-[oklch(0.62_0.16_25)]",
+    bar: "bg-[oklch(0.58_0.14_25)]",
   },
 };
 
@@ -62,8 +62,6 @@ export function ApexPortfolioHealth({
     );
   }
 
-  const totalTenants = summary.companies + summary.branches;
-
   return (
     <Card className="apex-panel-surface apex-health-card relative overflow-hidden border-2">
       <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/8 blur-2xl" />
@@ -87,8 +85,8 @@ export function ApexPortfolioHealth({
             </p>
             <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">{health.label}</p>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              Based on subscription status, renewals, and queue backlog across{" "}
-              {totalTenants} tenants.
+              Based on subscription status, queue backlog, and account restrictions across{" "}
+              {summary.totalTenants} wholesalers.
             </p>
           </div>
         </div>

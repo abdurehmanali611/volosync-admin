@@ -31,20 +31,12 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { RefreshIconButton } from "@/components/ui/refresh-icon-button";
-import {
-  APEX_ACTION_NAV,
-  APEX_MAIN_NAV,
-  APEX_MONITORING_NAV,
-  type ApexNavItem,
-} from "@/constants/apexNav";
-import { clearApexSession, getApexMember } from "@/lib/admin/session";
-import {
-  useApexDashboard,
-  type DashboardSummary,
-} from "@/lib/admin/dashboard";
+import { APEX_ACTION_NAV, APEX_MAIN_NAV, APEX_MONITORING_NAV, type ApexNavItem } from "@/constants/apexNav";
+import { clearApexSession, getApexMember } from "@/lib/apex/auth";
+import { useApexDashboard } from "@/lib/apex/dashboard-context";
+import type { DashboardSummary } from "@/lib/apex/actions";
 import { useApexRouteGuard } from "@/hooks/useApexRouteGuard";
-import { broadcastSystemRefresh } from "@/hooks/useSystemRefresh";
-import { apexPageTitle } from "@/lib/admin/pageTitles";
+import { apexPageTitle } from "@/lib/apex/pageTitles";
 import { cn } from "@/lib/utils";
 import { ApexHeaderHealthPill } from "@/components/apex/tenant/ApexTenantListSummary";
 
@@ -138,20 +130,17 @@ export function ApexShell({ children }: { children: React.ReactNode }) {
   const [refreshing, setRefreshing] = useState(false);
   const member = getApexMember();
 
-  const displayName = member?.name || member?.username || "Apex admin";
+  const displayName = member?.displayName || member?.UserName || "Apex admin";
   const pageTitle = apexPageTitle(pathname, searchParams);
   const queueTotal = summary
     ? summary.pendingSetupPayments +
       summary.pendingYearlyPayments +
-      summary.pendingModuleRequests +
       summary.unreadFeedback
     : 0;
 
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      // The page's own data reloads through the same system signal.
-      broadcastSystemRefresh();
       await refresh(true);
     } finally {
       setRefreshing(false);
@@ -186,7 +175,7 @@ export function ApexShell({ children }: { children: React.ReactNode }) {
               <ApexLogo size={40} className="shrink-0 opacity-95" />
               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
                 <p className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">
-                  VoloSync · Apex
+                  Apex · VoloSync
                 </p>
                 <p className="truncate text-[11px] text-muted-foreground">
                   Operations & monitoring
@@ -220,20 +209,21 @@ export function ApexShell({ children }: { children: React.ReactNode }) {
               summary={summary}
             />
 
-            {summary && (summary.expired > 0 || summary.dueSoon > 0) ? (
+            {summary && (summary.suspendedTenants > 0 || summary.bannedTenants > 0) ? (
               <div className="apex-alert-card mx-2 mt-4 group-data-[collapsible=icon]:hidden">
                 <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Renewal alerts
+                  Account alerts
                 </p>
-                {summary.dueSoon > 0 ? (
+                {summary.suspendedTenants > 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    {summary.dueSoon} subscription{summary.dueSoon === 1 ? "" : "s"} due
-                    within 30 days
+                    {summary.suspendedTenants} suspended propert
+                    {summary.suspendedTenants === 1 ? "y" : "ies"}
                   </p>
                 ) : null}
-                {summary.expired > 0 ? (
+                {summary.bannedTenants > 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    {summary.expired} subscription{summary.expired === 1 ? "" : "s"} expired
+                    {summary.bannedTenants} banned propert
+                    {summary.bannedTenants === 1 ? "y" : "ies"}
                   </p>
                 ) : null}
               </div>
@@ -308,7 +298,7 @@ export function ApexShell({ children }: { children: React.ReactNode }) {
                 busy={refreshing}
                 disabled={loading}
                 onClick={() => void onRefresh()}
-                aria-label="Refresh page and dashboard counts"
+                aria-label="Refresh dashboard counts"
                 className="apex-icon-btn"
               />
               <ApexLogoMark size={36} className="md:hidden" />

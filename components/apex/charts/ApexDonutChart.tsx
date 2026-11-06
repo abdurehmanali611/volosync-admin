@@ -7,16 +7,10 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApexEmptyState } from "@/components/apex/layout/ApexEmptyState";
 import { PieChart as PieChartIcon } from "lucide-react";
-import type { ChartSlice } from "@/lib/admin/dashboard";
+import type { ChartSlice } from "@/lib/apex/analytics";
 
 type ApexDonutChartProps = {
   title: string;
@@ -56,14 +50,12 @@ export function ApexDonutChart({
     <Card className="apex-panel-surface apex-chart-card border-2">
       <CardHeader className="border-b border-white/6 pb-4">
         <CardTitle className="flex items-center gap-2 text-base font-semibold">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[oklch(0.3_0.04_180)] text-[oklch(0.88_0.04_180)] ring-1 ring-[oklch(0.68_0.13_180/0.3)]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[oklch(0.3_0.04_195)] text-[oklch(0.88_0.04_195)] ring-1 ring-[oklch(0.55_0.1_195/0.3)]">
             <PieChartIcon className="h-4 w-4" />
           </span>
           {title}
         </CardTitle>
-        {description ? (
-          <CardDescription className="text-[13px]">{description}</CardDescription>
-        ) : null}
+        {description ? <CardDescription className="text-[13px]">{description}</CardDescription> : null}
       </CardHeader>
       <CardContent className="pt-5">
         {data.length === 0 || total === 0 ? (
@@ -112,23 +104,16 @@ export function ApexDonutChart({
             </div>
             <ul className="flex w-full flex-1 flex-col gap-2.5">
               {data.map((item) => (
-                <li
-                  key={item.key}
-                  className="flex items-center justify-between gap-3 text-sm"
-                >
+                <li key={item.key} className="flex items-center justify-between gap-3 text-sm">
                   <div className="flex min-w-0 items-center gap-2.5">
                     <span
                       className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-white/10"
                       style={{ backgroundColor: item.color }}
                     />
-                    <span className="truncate font-medium text-foreground">
-                      {item.label}
-                    </span>
+                    <span className="truncate font-medium text-foreground">{item.label}</span>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span className="font-bold tabular-nums text-foreground">
-                      {item.value}
-                    </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-bold tabular-nums text-foreground">{item.value}</span>
                     <span className="text-xs text-muted-foreground">
                       ({Math.round((item.value / total) * 100)}%)
                     </span>

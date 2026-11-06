@@ -1,45 +1,40 @@
 import Link from "next/link";
-import { ArrowUpRight, CreditCard, MessageCircle, Puzzle, UserPlus } from "lucide-react";
+import { ArrowUpRight, Puzzle, UserCheck, UserX, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { DashboardSummary } from "@/lib/admin/dashboard";
+import type { DashboardSummary } from "@/lib/apex/actions";
 
-type MonitoringStatKey =
-  | "pendingSetupPayments"
-  | "pendingYearlyPayments"
-  | "pendingModuleRequests"
-  | "unreadFeedback";
+type MonitoringStatKey = "totalUsers" | "disabledUsers" | "pendingModuleRequests";
 
 const MONITORING_STATS: {
   key: MonitoringStatKey;
   title: string;
   href: string;
-  icon: typeof UserPlus;
+  icon: typeof Users;
   iconClass: string;
   accent: string;
   topBar: string;
   attention?: boolean;
 }[] = [
   {
-    key: "pendingSetupPayments",
-    title: "Setup payments",
-    href: "/payments/setup",
-    icon: UserPlus,
-    accent: "apex-stat-accent-gold",
-    topBar: "apex-stat-topbar-gold",
+    key: "totalUsers",
+    title: "Tenant users",
+    href: "/users",
+    icon: Users,
+    accent: "apex-stat-accent-teal",
+    topBar: "apex-stat-topbar-teal",
     iconClass:
-      "bg-[oklch(0.32_0.06_162)] text-[oklch(0.92_0.04_162)] ring-1 ring-[oklch(0.69_0.16_162/0.4)] shadow-[0_0_16px_-4px_oklch(0.69_0.16_162/0.35)]",
-    attention: true,
+      "bg-[oklch(0.28_0.05_195)] text-[oklch(0.9_0.04_195)] ring-1 ring-[oklch(0.62_0.12_195/0.4)] shadow-[0_0_16px_-4px_oklch(0.62_0.12_195/0.35)]",
   },
   {
-    key: "pendingYearlyPayments",
-    title: "Yearly payments",
-    href: "/payments/yearly",
-    icon: CreditCard,
-    accent: "apex-stat-accent-violet",
-    topBar: "apex-stat-topbar-violet",
+    key: "disabledUsers",
+    title: "Disabled logins",
+    href: "/users",
+    icon: UserX,
+    accent: "apex-stat-accent-danger",
+    topBar: "apex-stat-topbar-danger",
     iconClass:
-      "bg-[oklch(0.28_0.05_300)] text-[oklch(0.9_0.04_300)] ring-1 ring-[oklch(0.62_0.1_300/0.38)] shadow-[0_0_16px_-4px_oklch(0.62_0.1_300/0.32)]",
+      "bg-[oklch(0.32_0.06_25)] text-[oklch(0.92_0.04_25)] ring-1 ring-[oklch(0.65_0.14_25/0.4)] shadow-[0_0_16px_-4px_oklch(0.65_0.14_25/0.35)]",
     attention: true,
   },
   {
@@ -50,26 +45,14 @@ const MONITORING_STATS: {
     accent: "apex-stat-accent-violet",
     topBar: "apex-stat-topbar-violet",
     iconClass:
-      "bg-[oklch(0.3_0.05_300)] text-[oklch(0.92_0.04_300)] ring-1 ring-[oklch(0.62_0.1_300/0.35)] shadow-[0_0_16px_-4px_oklch(0.62_0.1_300/0.28)]",
-    attention: true,
-  },
-  {
-    key: "unreadFeedback",
-    title: "Unread feedback",
-    href: "/feedback",
-    icon: MessageCircle,
-    accent: "apex-stat-accent-teal",
-    topBar: "apex-stat-topbar-teal",
-    iconClass:
-      "bg-[oklch(0.3_0.05_230)] text-[oklch(0.92_0.04_230)] ring-1 ring-[oklch(0.65_0.12_230/0.35)] shadow-[0_0_16px_-4px_oklch(0.65_0.12_230/0.3)]",
+      "bg-[oklch(0.3_0.05_300)] text-[oklch(0.92_0.04_300)] ring-1 ring-[oklch(0.62_0.1_300/0.38)] shadow-[0_0_16px_-4px_oklch(0.62_0.1_300/0.32)]",
     attention: true,
   },
 ];
 
-/** The four derivable action-queue counters (polled badge source). */
 export function ApexMonitoringStats({ summary }: { summary: DashboardSummary }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-3">
       {MONITORING_STATS.map((stat) => {
         const value = summary[stat.key];
         const Icon = stat.icon;
@@ -104,12 +87,15 @@ export function ApexMonitoringStats({ summary }: { summary: DashboardSummary }) 
                     <p className="mt-2 text-xs font-semibold text-primary">
                       Needs review →
                     </p>
-                  ) : (
-                    <p className="mt-2 text-xs text-muted-foreground">Queue is clear</p>
-                  )}
+                  ) : stat.key === "totalUsers" ? (
+                    <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                      <UserCheck className="h-3 w-3" />
+                      Across all wholesalers
+                    </p>
+                  ) : null}
                 </div>
               </div>
-              <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[oklch(0.8_0.04_162)]" />
+              <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[oklch(0.8_0.04_85)]" />
             </CardContent>
           </Card>
         );

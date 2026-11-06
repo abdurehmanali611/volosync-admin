@@ -18,7 +18,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-import { useApexDashboard } from "@/lib/admin/dashboard";
+import { useApexDashboard } from "@/lib/apex/dashboard-context";
 
 const GROUPS: { label: string; items: ApexNavItem[] }[] = [
   { label: "Workspace", items: APEX_MAIN_NAV },
@@ -60,7 +60,7 @@ export function ApexCommandPalette() {
       description="Jump to any page or workflow"
       className="apex-cmdk-dialog max-w-xl border-0 p-0 shadow-2xl"
     >
-      <CommandInput placeholder="Search tenants, payments, modules, pricing…" />
+      <CommandInput placeholder="Search tenants, payments, chat, pricing…" />
       <CommandList className="max-h-[min(420px,60vh)]">
         <CommandEmpty>No matching destination.</CommandEmpty>
         {GROUPS.map((group, gi) => (
@@ -80,10 +80,10 @@ export function ApexCommandPalette() {
                     onSelect={() => go(item.href)}
                     className="apex-cmdk-item gap-3 rounded-lg py-2.5"
                   >
-                    <Icon className="h-4 w-4 shrink-0 text-[oklch(0.78_0.04_162)]" />
+                    <Icon className="h-4 w-4 shrink-0 text-[oklch(0.78_0.04_85)]" />
                     <span className="flex-1">{item.label}</span>
                     {badge != null ? (
-                      <span className="rounded-full bg-[oklch(0.69_0.16_162)] px-2 py-0.5 text-[10px] font-bold tabular-nums text-[oklch(0.14_0.015_162)]">
+                      <span className="rounded-full bg-[oklch(0.72_0.065_85)] px-2 py-0.5 text-[10px] font-bold tabular-nums text-[oklch(0.14_0.015_265)]">
                         {badge > 99 ? "99+" : badge}
                       </span>
                     ) : null}

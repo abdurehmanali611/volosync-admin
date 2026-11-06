@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -9,7 +8,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -27,6 +25,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--apex-success);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -39,6 +38,9 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-apex-teal: var(--apex-teal);
+  --color-apex-gold: var(--apex-gold);
+  --color-apex-emerald: var(--apex-emerald);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -49,129 +51,124 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  /* Zinc canvas with emerald + teal Apex brand */
-  --background: oklch(0.988 0.002 285);
-  --foreground: oklch(0.19 0.006 285);
+  --radius: 0.75rem;
+  /* VoloSync canvas — cool neutrals with cyan primary */
+  --background: oklch(0.985 0.004 255);
+  --foreground: oklch(0.19 0.02 265);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.19 0.006 285);
+  --card-foreground: oklch(0.19 0.02 265);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.19 0.006 285);
-  --primary: oklch(0.52 0.13 162);
-  --primary-foreground: oklch(0.99 0.01 162);
-  --secondary: oklch(0.965 0.004 285);
-  --secondary-foreground: oklch(0.25 0.006 285);
-  --muted: oklch(0.955 0.004 285);
-  --muted-foreground: oklch(0.5 0.012 285);
-  --accent: oklch(0.94 0.03 162);
-  --accent-foreground: oklch(0.28 0.06 162);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.9 0.006 285);
-  --input: oklch(0.9 0.006 285);
-  --ring: oklch(0.6 0.11 180);
-  --chart-1: oklch(0.62 0.14 162);
-  --chart-2: oklch(0.62 0.12 180);
-  --chart-3: oklch(0.6 0.11 230);
-  --chart-4: oklch(0.6 0.13 295);
-  --chart-5: oklch(0.63 0.19 15);
-  --sidebar: oklch(0.982 0.003 285);
-  --sidebar-foreground: oklch(0.2 0.006 285);
-  --sidebar-primary: oklch(0.52 0.13 162);
-  --sidebar-primary-foreground: oklch(0.99 0.01 162);
-  --sidebar-accent: oklch(0.95 0.015 162);
-  --sidebar-accent-foreground: oklch(0.25 0.04 162);
-  --sidebar-border: oklch(0.9 0.006 285);
-  --sidebar-ring: oklch(0.6 0.11 180);
-  --scrollbar-track: oklch(0.965 0.004 285);
-  --scrollbar-thumb: oklch(0.82 0.006 285);
-  --scrollbar-thumb-hover: oklch(0.66 0.02 285);
-
-  /* Apex brand tokens — emerald + teal + semantic accents (light) */
-  --apex-emerald: oklch(0.52 0.13 162);
-  --apex-emerald-dim: oklch(0.44 0.11 162);
-  --apex-emerald-glow: oklch(0.52 0.13 162 / 16%);
-  --apex-teal: oklch(0.55 0.11 180);
-  --apex-teal-dim: oklch(0.45 0.09 180);
-  --apex-teal-glow: oklch(0.55 0.11 180 / 16%);
-  --apex-sky: oklch(0.55 0.11 230);
-  --apex-sky-glow: oklch(0.55 0.11 230 / 16%);
-  --apex-amber: oklch(0.7 0.14 75);
-  --apex-amber-glow: oklch(0.7 0.14 75 / 16%);
-  --apex-success: oklch(0.52 0.13 162);
-  --apex-success-fg: oklch(0.98 0.02 162);
-  --apex-warning: oklch(0.7 0.14 75);
-  --apex-warning-fg: oklch(0.24 0.04 75);
-  --apex-danger: oklch(0.55 0.19 25);
-  --apex-danger-fg: oklch(0.98 0.01 25);
-  --apex-violet: oklch(0.55 0.15 295);
-  --apex-violet-glow: oklch(0.55 0.15 295 / 16%);
+  --popover-foreground: oklch(0.19 0.02 265);
+  --primary: oklch(0.55 0.15 195);
+  --primary-foreground: oklch(0.99 0.005 200);
+  --secondary: oklch(0.955 0.01 255);
+  --secondary-foreground: oklch(0.24 0.03 265);
+  --muted: oklch(0.955 0.008 255);
+  --muted-foreground: oklch(0.52 0.02 265);
+  --accent: oklch(0.95 0.02 200);
+  --accent-foreground: oklch(0.25 0.04 220);
+  --destructive: oklch(0.58 0.22 25);
+  --border: oklch(0.9 0.01 260);
+  --input: oklch(0.9 0.01 260);
+  --ring: oklch(0.62 0.14 200);
+  --chart-1: oklch(0.68 0.16 195);
+  --chart-2: oklch(0.7 0.15 160);
+  --chart-3: oklch(0.62 0.19 295);
+  --chart-4: oklch(0.78 0.15 80);
+  --chart-5: oklch(0.66 0.2 15);
+  --sidebar: oklch(0.975 0.006 255);
+  --sidebar-foreground: oklch(0.24 0.03 265);
+  --sidebar-primary: oklch(0.55 0.15 195);
+  --sidebar-primary-foreground: oklch(0.99 0.005 200);
+  --sidebar-accent: oklch(0.945 0.015 220);
+  --sidebar-accent-foreground: oklch(0.24 0.03 265);
+  --sidebar-border: oklch(0.9 0.01 260);
+  --sidebar-ring: oklch(0.62 0.14 200);
+  --scrollbar-track: oklch(0.955 0.01 255);
+  --scrollbar-thumb: oklch(0.78 0.04 200);
+  --scrollbar-thumb-hover: oklch(0.62 0.1 200);
+  /* Apex section accents — cyan + gold on the VoloSync canvas */
+  --apex-gold: oklch(0.78 0.15 80);
+  --apex-gold-dim: oklch(0.6 0.11 80);
+  --apex-gold-glow: oklch(0.78 0.15 80 / 22%);
+  --apex-teal: oklch(0.55 0.15 195);
+  --apex-teal-dim: oklch(0.45 0.12 195);
+  --apex-teal-glow: oklch(0.55 0.15 195 / 20%);
+  --apex-emerald: oklch(0.7 0.15 160);
+  --apex-emerald-glow: oklch(0.7 0.15 160 / 18%);
+  --apex-sky: oklch(0.68 0.16 195);
+  --apex-sky-glow: oklch(0.68 0.16 195 / 18%);
+  --apex-amber: oklch(0.78 0.15 80);
+  --apex-amber-glow: oklch(0.78 0.15 80 / 20%);
+  --apex-success: oklch(0.7 0.15 160);
+  --apex-success-fg: oklch(0.99 0.005 160);
+  --apex-warning: oklch(0.78 0.15 80);
+  --apex-warning-fg: oklch(0.2 0.04 80);
+  --apex-danger: oklch(0.66 0.2 15);
+  --apex-danger-fg: oklch(0.99 0.005 15);
+  --apex-violet: oklch(0.62 0.19 295);
+  --apex-violet-glow: oklch(0.62 0.19 295 / 18%);
   --apex-surface-elevated: oklch(1 0 0);
-  /* Legacy alias kept so copied hotcol classes keep resolving (emerald now). */
-  --apex-gold: var(--apex-emerald);
-  --apex-gold-dim: var(--apex-emerald-dim);
-  --apex-gold-glow: var(--apex-emerald-glow);
 }
 
 .dark {
-  --background: oklch(0.145 0.004 285);
-  --foreground: oklch(0.97 0.003 285);
-  --card: oklch(0.21 0.006 285);
-  --card-foreground: oklch(0.97 0.003 285);
-  --popover: oklch(0.21 0.006 285);
-  --popover-foreground: oklch(0.97 0.003 285);
-  --primary: oklch(0.69 0.16 162);
-  --primary-foreground: oklch(0.16 0.04 162);
-  --secondary: oklch(0.274 0.006 286);
-  --secondary-foreground: oklch(0.96 0.003 285);
-  --muted: oklch(0.274 0.006 286);
-  --muted-foreground: oklch(0.71 0.01 285);
-  --accent: oklch(0.28 0.05 162);
-  --accent-foreground: oklch(0.93 0.04 162);
-  --destructive: oklch(0.704 0.191 22.216);
+  --background: oklch(0.148 0.018 275);
+  --foreground: oklch(0.965 0.006 275);
+  --card: oklch(0.19 0.019 275);
+  --card-foreground: oklch(0.965 0.006 275);
+  --popover: oklch(0.185 0.02 275);
+  --popover-foreground: oklch(0.965 0.006 275);
+  --primary: oklch(0.78 0.13 195);
+  --primary-foreground: oklch(0.16 0.03 230);
+  --secondary: oklch(0.245 0.022 275);
+  --secondary-foreground: oklch(0.96 0.006 275);
+  --muted: oklch(0.235 0.02 275);
+  --muted-foreground: oklch(0.735 0.02 275);
+  --accent: oklch(0.26 0.03 275);
+  --accent-foreground: oklch(0.97 0.006 275);
+  --destructive: oklch(0.7 0.19 20);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.68 0.13 180);
-  --chart-1: oklch(0.69 0.16 162);
-  --chart-2: oklch(0.7 0.13 180);
-  --chart-3: oklch(0.68 0.13 230);
-  --chart-4: oklch(0.66 0.15 295);
-  --chart-5: oklch(0.65 0.19 15);
-  --sidebar: oklch(0.21 0.006 285);
-  --sidebar-foreground: oklch(0.96 0.003 285);
-  --sidebar-primary: oklch(0.69 0.16 162);
-  --sidebar-primary-foreground: oklch(0.16 0.04 162);
-  --sidebar-accent: oklch(0.25 0.03 165);
-  --sidebar-accent-foreground: oklch(0.96 0.02 165);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.68 0.13 180);
-  --scrollbar-track: oklch(0.21 0.006 285);
-  --scrollbar-thumb: oklch(0.32 0.008 285);
-  --scrollbar-thumb-hover: oklch(0.5 0.05 180);
+  --ring: oklch(0.75 0.12 200 / 65%);
+  --chart-1: oklch(0.8 0.14 195);
+  --chart-2: oklch(0.8 0.16 160);
+  --chart-3: oklch(0.76 0.18 300);
+  --chart-4: oklch(0.84 0.15 82);
+  --chart-5: oklch(0.76 0.18 12);
+  --sidebar: oklch(0.165 0.02 275);
+  --sidebar-foreground: oklch(0.94 0.008 275);
+  --sidebar-primary: oklch(0.78 0.13 195);
+  --sidebar-primary-foreground: oklch(0.16 0.03 230);
+  --sidebar-accent: oklch(0.245 0.025 275);
+  --sidebar-accent-foreground: oklch(0.98 0.006 275);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.75 0.12 200 / 60%);
+  --scrollbar-track: oklch(0.19 0.019 275);
+  --scrollbar-thumb: oklch(0.32 0.02 275);
+  --scrollbar-thumb-hover: oklch(0.52 0.1 200);
 
-  /* Apex brand tokens — emerald + teal + semantic accents */
-  --apex-emerald: oklch(0.69 0.16 162);
-  --apex-emerald-dim: oklch(0.52 0.12 162);
-  --apex-emerald-glow: oklch(0.69 0.16 162 / 18%);
-  --apex-teal: oklch(0.7 0.13 180);
-  --apex-teal-dim: oklch(0.52 0.11 180);
-  --apex-teal-glow: oklch(0.55 0.1 180 / 20%);
-  --apex-sky: oklch(0.68 0.13 230);
-  --apex-sky-glow: oklch(0.55 0.1 230 / 18%);
-  --apex-amber: oklch(0.78 0.14 75);
-  --apex-amber-glow: oklch(0.7 0.12 75 / 20%);
-  --apex-success: oklch(0.66 0.15 162);
-  --apex-success-fg: oklch(0.96 0.02 162);
-  --apex-warning: oklch(0.78 0.14 75);
-  --apex-warning-fg: oklch(0.2 0.04 75);
-  --apex-danger: oklch(0.65 0.18 25);
-  --apex-danger-fg: oklch(0.98 0.01 25);
-  --apex-violet: oklch(0.66 0.15 295);
-  --apex-violet-glow: oklch(0.55 0.1 295 / 18%);
-  --apex-surface-elevated: oklch(0.24 0.006 285);
-  /* Legacy alias kept so copied hotcol classes keep resolving (emerald now). */
-  --apex-gold: var(--apex-emerald);
-  --apex-gold-dim: var(--apex-emerald-dim);
-  --apex-gold-glow: var(--apex-emerald-glow);
+  /* Apex brand tokens — cyan + gold on the VoloSync dark canvas */
+  --apex-gold: oklch(0.84 0.15 82);
+  --apex-gold-dim: oklch(0.62 0.11 82);
+  --apex-gold-glow: oklch(0.84 0.15 82 / 22%);
+  --apex-teal: oklch(0.78 0.13 195);
+  --apex-teal-dim: oklch(0.55 0.1 195);
+  --apex-teal-glow: oklch(0.78 0.13 195 / 20%);
+  --apex-emerald: oklch(0.8 0.16 160);
+  --apex-emerald-glow: oklch(0.8 0.16 160 / 18%);
+  --apex-sky: oklch(0.8 0.14 195);
+  --apex-sky-glow: oklch(0.8 0.14 195 / 18%);
+  --apex-amber: oklch(0.84 0.15 82);
+  --apex-amber-glow: oklch(0.84 0.15 82 / 20%);
+  --apex-success: oklch(0.8 0.16 160);
+  --apex-success-fg: oklch(0.16 0.03 160);
+  --apex-warning: oklch(0.84 0.15 82);
+  --apex-warning-fg: oklch(0.2 0.04 82);
+  --apex-danger: oklch(0.76 0.18 12);
+  --apex-danger-fg: oklch(0.16 0.03 12);
+  --apex-violet: oklch(0.76 0.18 300);
+  --apex-violet-glow: oklch(0.76 0.18 300 / 18%);
+  --apex-surface-elevated: oklch(0.21 0.02 275);
 }
 
 @layer base {
@@ -223,17 +220,17 @@
   .dark .apex-canvas {
     background-color: var(--background);
     background-image:
-      radial-gradient(ellipse 120% 80% at 0% -15%, var(--apex-emerald-glow), transparent 55%),
-      radial-gradient(ellipse 90% 60% at 100% 0%, var(--apex-teal-glow), transparent 50%),
-      radial-gradient(ellipse 70% 50% at 50% 100%, oklch(0.2 0.02 285 / 45%), transparent 60%);
+      radial-gradient(ellipse 120% 80% at 0% -15%, var(--apex-teal-glow), transparent 55%),
+      radial-gradient(ellipse 90% 60% at 100% 0%, var(--apex-gold-glow), transparent 50%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, oklch(0.22 0.03 265 / 45%), transparent 60%);
   }
 
   .dark .apex-floating-inset {
     background: linear-gradient(
       145deg,
-      oklch(0.152 0.004 285) 0%,
-      oklch(0.145 0.004 285) 50%,
-      oklch(0.135 0.004 285 / 95%) 100%
+      oklch(0.17 0.022 265) 0%,
+      oklch(0.155 0.02 265) 50%,
+      oklch(0.14 0.018 265 / 95%) 100%
     );
   }
 
@@ -249,12 +246,12 @@
   }
 
   .dark .apex-sidebar {
-    background-color: oklch(0.21 0.006 285);
+    background-color: oklch(0.12 0.012 265);
     background-image:
-      linear-gradient(180deg, oklch(0.23 0.006 285) 0%, oklch(0.19 0.006 285) 100%),
-      radial-gradient(circle at 0% 100%, var(--apex-emerald-glow), transparent 45%);
+      linear-gradient(180deg, oklch(0.145 0.014 265) 0%, oklch(0.11 0.01 265) 100%),
+      radial-gradient(circle at 0% 100%, var(--apex-gold-glow), transparent 45%);
     box-shadow:
-      inset -1px 0 0 oklch(0.55 0.01 285 / 14%),
+      inset -1px 0 0 oklch(0.45 0.02 265 / 14%),
       4px 0 24px -8px oklch(0 0 0 / 35%);
   }
 
@@ -264,10 +261,10 @@
   }
 
   .dark .apex-topbar {
-    border-bottom: 1px solid oklch(0.55 0.01 285 / 20%);
-    background: oklch(0.16 0.004 285 / 88%);
+    border-bottom: 1px solid oklch(0.45 0.02 265 / 20%);
+    background: oklch(0.115 0.012 265 / 88%);
     backdrop-filter: blur(16px) saturate(1.2);
-    box-shadow: 0 1px 0 oklch(0.69 0.16 162 / 6%);
+    box-shadow: 0 1px 0 oklch(0.55 0.04 85 / 6%);
   }
 
   .dark .apex-icon-btn {
@@ -294,7 +291,7 @@
     background: linear-gradient(
       135deg,
       oklch(0.58 0.12 25 / 12%) 0%,
-      oklch(0.21 0.006 285 / 50%) 100%
+      oklch(0.2 0.01 265 / 50%) 100%
     );
   }
 
@@ -315,25 +312,35 @@
 
   .dark [data-slot="sidebar-menu-button"] {
     cursor: pointer;
+    background: transparent !important;
     @apply rounded-lg text-[13px] transition-all duration-150;
   }
 
-  .dark [data-slot="sidebar-menu-button"]:hover:not([data-active="true"]) {
-    background: oklch(0.24 0.008 285 / 80%) !important;
-    color: oklch(0.96 0.02 162) !important;
+  .dark [data-slot="sidebar-menu-button"]:hover {
+    background: oklch(0.22 0.012 265 / 80%) !important;
+    color: oklch(0.92 0.012 85) !important;
+  }
+
+  .dark button[role="combobox"],
+  .dark [data-slot="tabs-trigger"] {
+    cursor: pointer;
+    background: transparent !important;
+    transition: all 150ms ease;
+  }
+
+  .dark button[role="combobox"]:hover,
+  .dark button[role="combobox"]:active,
+  .dark button[role="combobox"][data-state="open"],
+  .dark [data-slot="tabs-trigger"]:hover,
+  .dark [data-slot="tabs-trigger"]:active,
+  .dark [data-slot="tabs-trigger"][data-state="active"] {
+    background: oklch(0.22 0.012 265 / 80%) !important;
+    color: oklch(0.92 0.012 85) !important;
   }
 
   .dark .apex-nav-active {
-    background: linear-gradient(
-      90deg,
-      oklch(0.69 0.16 162 / 24%) 0%,
-      oklch(0.7 0.13 180 / 16%) 50%,
-      oklch(0.24 0.006 285 / 92%) 100%
-    ) !important;
-    color: oklch(0.98 0.003 285) !important;
-    box-shadow:
-      inset 3px 0 0 var(--apex-emerald),
-      0 1px 0 oklch(0 0 0 / 12%);
+    color: oklch(0.98 0.01 95) !important;
+    box-shadow: inset 3px 0 0 var(--apex-teal);
   }
 
   .dark .apex-nav-active svg {
@@ -341,37 +348,37 @@
   }
 
   .dark .apex-nav-badge {
-    background: linear-gradient(135deg, var(--apex-emerald), var(--apex-teal));
-    color: oklch(0.14 0.02 162);
+    background: linear-gradient(135deg, var(--apex-teal), var(--apex-gold-dim));
+    color: oklch(0.12 0.02 265);
     @apply min-w-5 justify-center font-semibold shadow-sm;
   }
 
   .dark .apex-user-card {
     @apply rounded-xl border p-3;
-    border-color: oklch(0.5 0.05 162 / 18%);
-    background: linear-gradient(145deg, oklch(0.21 0.006 285) 0%, oklch(0.18 0.006 285) 100%);
+    border-color: oklch(0.5 0.03 85 / 18%);
+    background: linear-gradient(145deg, oklch(0.2 0.012 265) 0%, oklch(0.16 0.01 265) 100%);
   }
 
   .dark .apex-stat-card {
     @apply relative overflow-hidden transition-all duration-200 ease-out;
     background: linear-gradient(
       160deg,
-      oklch(0.232 0.006 285) 0%,
-      oklch(0.198 0.006 285) 100%
+      oklch(0.22 0.028 265) 0%,
+      oklch(0.18 0.022 265) 100%
     );
   }
 
   .dark .apex-stat-topbar-gold {
-    background: linear-gradient(90deg, var(--apex-emerald), oklch(0.62 0.14 175));
+    background: linear-gradient(90deg, var(--apex-gold), oklch(0.72 0.1 75));
   }
   .dark .apex-stat-topbar-teal {
-    background: linear-gradient(90deg, var(--apex-teal), oklch(0.62 0.12 180));
+    background: linear-gradient(90deg, var(--apex-teal), oklch(0.62 0.12 195));
   }
   .dark .apex-stat-topbar-violet {
-    background: linear-gradient(90deg, var(--apex-violet), oklch(0.58 0.13 305));
+    background: linear-gradient(90deg, var(--apex-violet), oklch(0.58 0.1 280));
   }
   .dark .apex-stat-topbar-emerald {
-    background: linear-gradient(90deg, var(--apex-emerald), oklch(0.58 0.12 162));
+    background: linear-gradient(90deg, var(--apex-emerald), oklch(0.58 0.12 155));
   }
   .dark .apex-stat-topbar-danger {
     background: linear-gradient(90deg, var(--apex-danger), oklch(0.62 0.14 35));
@@ -385,17 +392,17 @@
     transform: translateY(-3px);
     box-shadow:
       0 16px 36px -14px oklch(0 0 0 / 55%),
-      0 0 0 1px oklch(0.68 0.13 180 / 18%);
+      0 0 0 1px oklch(0.62 0.1 195 / 18%);
   }
 
   .dark .apex-stat-card-attention {
     box-shadow:
-      0 0 0 1px var(--apex-emerald-glow),
+      0 0 0 1px var(--apex-gold-glow),
       inset 0 1px 0 oklch(1 0 0 / 4%);
   }
 
   .dark .apex-stat-accent-gold {
-    box-shadow: inset 4px 0 0 var(--apex-emerald);
+    box-shadow: inset 4px 0 0 var(--apex-gold);
   }
   .dark .apex-stat-accent-teal {
     box-shadow: inset 4px 0 0 var(--apex-teal);
@@ -414,11 +421,11 @@
   }
 
   .dark .apex-panel-surface {
-    border: 1px solid oklch(0.55 0.01 285 / 16%);
+    border: 1px solid oklch(0.45 0.02 265 / 16%);
     background: linear-gradient(
       180deg,
-      oklch(0.205 0.006 285 / 98%) 0%,
-      oklch(0.185 0.006 285 / 95%) 100%
+      oklch(0.175 0.014 265 / 98%) 0%,
+      oklch(0.15 0.012 265 / 95%) 100%
     );
     box-shadow:
       0 4px 24px -8px oklch(0 0 0 / 45%),
@@ -427,12 +434,12 @@
   }
 
   .dark .apex-hero-banner {
-    border: 1px solid oklch(0.55 0.05 162 / 22%);
+    border: 1px solid oklch(0.55 0.04 85 / 22%);
     background: linear-gradient(
       125deg,
-      oklch(0.2 0.03 162 / 35%) 0%,
-      oklch(0.18 0.006 285) 45%,
-      oklch(0.16 0.03 200 / 40%) 100%
+      oklch(0.22 0.02 85 / 35%) 0%,
+      oklch(0.17 0.014 265) 45%,
+      oklch(0.15 0.02 220 / 40%) 100%
     );
     box-shadow:
       0 8px 32px -12px oklch(0 0 0 / 50%),
@@ -440,7 +447,7 @@
   }
 
   .dark .apex-page-header {
-    border-bottom: 1px solid oklch(0.55 0.01 285 / 18%);
+    border-bottom: 1px solid oklch(0.45 0.02 265 / 18%);
     padding-bottom: 1.5rem;
     position: relative;
   }
@@ -453,11 +460,11 @@
     width: 4rem;
     height: 2px;
     border-radius: 2px;
-    background: linear-gradient(90deg, var(--apex-emerald), var(--apex-teal));
+    background: linear-gradient(90deg, var(--apex-gold), var(--apex-teal));
   }
 
   .dark .apex-table-wrap :is(thead tr) {
-    background: oklch(0.21 0.006 285 / 70%);
+    background: oklch(0.2 0.012 265 / 70%);
     @apply border-b border-white/10;
   }
 
@@ -470,24 +477,24 @@
   }
 
   .dark .apex-table-wrap :is(tbody tr:hover) {
-    background: oklch(0.232 0.008 285 / 55%);
+    background: oklch(0.22 0.014 265 / 55%);
   }
 
   .dark .apex-search-input {
     @apply h-11 rounded-lg border-2 bg-background/50 text-[15px];
-    border-color: oklch(0.55 0.01 285 / 25%);
+    border-color: oklch(0.42 0.02 265 / 25%);
     box-shadow: inset 0 1px 2px oklch(0 0 0 / 15%);
   }
 
   .dark .apex-search-input:focus-visible {
-    border-color: oklch(0.6 0.1 162 / 55%);
-    @apply ring-4 ring-[oklch(0.6_0.1_162/0.15)];
+    border-color: oklch(0.65 0.05 85 / 55%);
+    @apply ring-4 ring-[oklch(0.65_0.05_85/0.15)];
   }
 
   .dark .apex-tabs-list {
     @apply h-11 gap-1 rounded-xl border-2 p-1;
-    border-color: oklch(0.55 0.01 285 / 22%);
-    background: oklch(0.185 0.006 285 / 80%);
+    border-color: oklch(0.4 0.02 265 / 22%);
+    background: oklch(0.16 0.01 265 / 80%);
   }
 
   .dark .apex-tabs-trigger {
@@ -497,7 +504,7 @@
 
   .dark .apex-tabs-trigger[data-state="active"] {
     @apply text-foreground shadow-md;
-    background: oklch(0.25 0.006 285);
+    background: oklch(0.24 0.014 265);
   }
 
   .dark [cmdk-item] {
@@ -508,21 +515,21 @@
     background-image:
       linear-gradient(
         155deg,
-        oklch(0.21 0.02 285) 0%,
-        oklch(0.19 0.055 162) 42%,
-        oklch(0.17 0.04 195) 100%
+        oklch(0.2 0.02 265) 0%,
+        oklch(0.17 0.03 85) 42%,
+        oklch(0.14 0.025 220) 100%
       ),
-      radial-gradient(circle at 12% 88%, var(--apex-emerald-glow), transparent 48%),
+      radial-gradient(circle at 12% 88%, var(--apex-gold-glow), transparent 48%),
       radial-gradient(circle at 88% 12%, var(--apex-teal-glow), transparent 42%);
   }
 
   .apex-gradient-text {
-    @apply bg-linear-to-r from-[oklch(0.85_0.13_162)] via-[oklch(0.86_0.1_185)] to-[oklch(0.8_0.11_300)] bg-clip-text font-semibold text-transparent;
+    @apply bg-linear-to-r from-[oklch(0.82_0.12_195)] via-[oklch(0.88_0.06_85)] to-[oklch(0.78_0.1_300)] bg-clip-text font-semibold text-transparent;
   }
 
   .dark .apex-glass-card {
-    border: 1px solid oklch(0.5 0.05 162 / 15%);
-    background: oklch(0.185 0.006 285 / 92%);
+    border: 1px solid oklch(0.5 0.03 85 / 15%);
+    background: oklch(0.17 0.014 265 / 92%);
     box-shadow:
       0 12px 40px -16px oklch(0 0 0 / 55%),
       inset 0 1px 0 oklch(1 0 0 / 5%);
@@ -540,7 +547,7 @@
   }
 
   .dark .apex-table-wrap a[href]:hover {
-    color: var(--apex-emerald);
+    color: var(--apex-gold);
   }
 
   .dark .apex-row-action {
@@ -550,7 +557,7 @@
   .dark .apex-loading-screen {
     background: var(--background);
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% 40%, var(--apex-emerald-glow), transparent 70%);
+      radial-gradient(ellipse 80% 50% at 50% 40%, var(--apex-gold-glow), transparent 70%);
   }
 
   .dark .apex-error-alert {
@@ -558,18 +565,18 @@
     background: linear-gradient(
       135deg,
       oklch(0.58 0.12 25 / 10%) 0%,
-      oklch(0.19 0.006 285 / 80%) 100%
+      oklch(0.18 0.012 265 / 80%) 100%
     );
     color: oklch(0.88 0.04 25);
   }
 
   .dark .apex-info-banner {
     @apply rounded-xl border px-4 py-3.5;
-    border-color: oklch(0.6 0.1 200 / 22%);
+    border-color: oklch(0.55 0.05 220 / 22%);
     background: linear-gradient(
       135deg,
-      oklch(0.6 0.1 200 / 10%) 0%,
-      oklch(0.185 0.006 285 / 90%) 100%
+      oklch(0.55 0.05 220 / 10%) 0%,
+      oklch(0.17 0.012 265 / 90%) 100%
     );
   }
 
@@ -585,18 +592,18 @@
     bottom: 0.15em;
     width: 3px;
     border-radius: 2px;
-    background: linear-gradient(180deg, var(--apex-emerald), var(--apex-teal));
+    background: linear-gradient(180deg, var(--apex-gold), var(--apex-teal));
   }
 
   .dark .apex-empty-icon {
     @apply relative flex h-16 w-16 items-center justify-center rounded-2xl;
     background: linear-gradient(
       145deg,
-      oklch(0.232 0.006 285) 0%,
-      oklch(0.185 0.006 285) 100%
+      oklch(0.22 0.014 265) 0%,
+      oklch(0.16 0.01 265) 100%
     );
     box-shadow:
-      0 0 0 1px oklch(0.5 0.05 162 / 15%),
+      0 0 0 1px oklch(0.5 0.03 85 / 15%),
       0 8px 24px -8px oklch(0 0 0 / 40%);
   }
 
@@ -607,7 +614,7 @@
     border-radius: inherit;
     background: linear-gradient(
       135deg,
-      oklch(0.65 0.1 162 / 20%),
+      oklch(0.65 0.05 85 / 20%),
       oklch(0.55 0.05 220 / 12%)
     );
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -617,12 +624,12 @@
   }
 
   .dark .apex-tenant-nav {
-    border: 1px solid oklch(0.55 0.01 285 / 18%);
+    border: 1px solid oklch(0.45 0.02 265 / 18%);
     border-radius: 1rem;
     background: linear-gradient(
       180deg,
-      oklch(0.185 0.006 285 / 92%) 0%,
-      oklch(0.16 0.006 285 / 96%) 100%
+      oklch(0.16 0.014 265 / 92%) 0%,
+      oklch(0.13 0.012 265 / 96%) 100%
     );
     backdrop-filter: blur(16px);
     box-shadow:
@@ -644,28 +651,28 @@
   }
 
   .dark .apex-tenant-nav-link:hover {
-    color: oklch(0.96 0.02 162);
-    background: oklch(0.24 0.008 285 / 70%);
-    border-color: oklch(0.55 0.01 285 / 20%);
+    color: oklch(0.92 0.012 85);
+    background: oklch(0.22 0.012 265 / 70%);
+    border-color: oklch(0.45 0.02 265 / 20%);
   }
 
   .dark .apex-tenant-nav-link-active {
-    color: oklch(0.96 0.02 162);
+    color: oklch(0.96 0.015 85);
     background: linear-gradient(
       180deg,
-      oklch(0.26 0.008 285 / 95%) 0%,
-      oklch(0.225 0.008 285 / 98%) 100%
+      oklch(0.28 0.02 265 / 95%) 0%,
+      oklch(0.22 0.018 265 / 98%) 100%
     );
-    border-color: oklch(0.6 0.1 162 / 28%);
+    border-color: oklch(0.62 0.06 85 / 28%);
     box-shadow:
-      0 0 0 1px oklch(0.69 0.16 162 / 12%),
-      0 8px 20px -12px oklch(0.52 0.12 162 / 45%),
+      0 0 0 1px oklch(0.72 0.08 85 / 12%),
+      0 8px 20px -12px oklch(0.55 0.08 85 / 45%),
       inset 0 1px 0 oklch(1 0 0 / 6%);
   }
 
   .dark .apex-tenant-nav-link:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px oklch(0.69 0.16 162 / 35%);
+    box-shadow: 0 0 0 2px oklch(0.72 0.08 85 / 35%);
   }
 
   .dark .apex-tenant-tab-panel {
@@ -676,31 +683,31 @@
     0%,
     100% {
       box-shadow:
-        0 12px 28px -12px oklch(0.55 0.1 180 / 55%),
-        0 0 0 1px oklch(0.69 0.16 162 / 28%);
+        0 12px 28px -12px oklch(0.55 0.1 195 / 55%),
+        0 0 0 1px oklch(0.72 0.08 85 / 28%);
     }
     50% {
       box-shadow:
-        0 16px 34px -10px oklch(0.55 0.1 180 / 75%),
-        0 0 0 1px oklch(0.69 0.16 162 / 42%),
-        0 0 24px -6px oklch(0.7 0.13 180 / 35%);
+        0 16px 34px -10px oklch(0.55 0.1 195 / 75%),
+        0 0 0 1px oklch(0.78 0.08 85 / 42%),
+        0 0 24px -6px oklch(0.62 0.1 195 / 35%);
     }
   }
 
   .dark .apex-chat-composer {
-    border-top: 1px solid oklch(0.55 0.01 285 / 16%);
+    border-top: 1px solid oklch(0.45 0.02 265 / 16%);
     background: linear-gradient(
       180deg,
-      oklch(0.185 0.006 285 / 50%) 0%,
-      oklch(0.17 0.006 285 / 80%) 100%
+      oklch(0.16 0.01 265 / 50%) 0%,
+      oklch(0.14 0.01 265 / 80%) 100%
     );
   }
 
   .dark .apex-chat-bubble-apex {
     background: linear-gradient(
       135deg,
-      oklch(0.32 0.05 162) 0%,
-      oklch(0.27 0.04 162) 100%
+      oklch(0.34 0.03 85) 0%,
+      oklch(0.28 0.025 85) 100%
     );
     box-shadow:
       0 4px 12px -4px oklch(0 0 0 / 35%),
@@ -708,7 +715,7 @@
   }
 
   .dark .apex-chat-bubble-tenant {
-    background: oklch(0.21 0.006 285 / 85%);
+    background: oklch(0.2 0.012 265 / 85%);
     box-shadow: inset 0 1px 0 oklch(1 0 0 / 4%);
   }
 
@@ -721,7 +728,7 @@
     content: "";
     flex: 1;
     height: 1px;
-    background: oklch(0.55 0.01 285 / 18%);
+    background: oklch(0.45 0.02 265 / 18%);
   }
 
   .dark .apex-loading-pulse {
@@ -732,11 +739,11 @@
     0%,
     100% {
       opacity: 0.85;
-      filter: drop-shadow(0 0 8px oklch(0.6 0.1 162 / 25%));
+      filter: drop-shadow(0 0 8px oklch(0.65 0.05 85 / 25%));
     }
     50% {
       opacity: 1;
-      filter: drop-shadow(0 0 16px oklch(0.6 0.1 162 / 40%));
+      filter: drop-shadow(0 0 16px oklch(0.65 0.05 85 / 40%));
     }
   }
 
@@ -746,7 +753,7 @@
     inset: 0;
     background: radial-gradient(
       circle at 30% 20%,
-      oklch(0.6 0.08 162 / 12%),
+      oklch(0.55 0.05 85 / 12%),
       transparent 50%
     );
     pointer-events: none;
@@ -757,8 +764,8 @@
     border-radius: 1rem;
     background: linear-gradient(
       165deg,
-      oklch(0.19 0.006 285 / 72%) 0%,
-      oklch(0.16 0.004 285 / 45%) 100%
+      oklch(0.18 0.022 265 / 72%) 0%,
+      oklch(0.14 0.018 265 / 45%) 100%
     );
     box-shadow:
       inset 0 1px 0 oklch(1 0 0 / 5%),
@@ -805,64 +812,64 @@
   }
 
   .dark .apex-quick-pill-neutral:hover {
-    background: oklch(0.25 0.006 285 / 85%);
-    border-color: oklch(0.55 0.05 180 / 30%);
+    background: oklch(0.24 0.025 265 / 85%);
+    border-color: oklch(0.52 0.08 195 / 30%);
   }
 
   .dark .apex-quick-pill {
     @apply inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-medium transition-all duration-200;
-    border-color: oklch(0.55 0.01 285 / 28%);
-    background: oklch(0.21 0.006 285 / 85%);
-    color: oklch(0.94 0.003 285);
+    border-color: oklch(0.42 0.02 265 / 28%);
+    background: oklch(0.2 0.022 265 / 85%);
+    color: oklch(0.92 0.012 95);
   }
 
   .dark .apex-quick-pill:hover {
     transform: translateY(-1px);
-    border-color: oklch(0.68 0.13 180 / 35%);
+    border-color: oklch(0.55 0.1 195 / 35%);
     box-shadow: 0 8px 24px -10px oklch(0 0 0 / 50%);
   }
 
   .dark .apex-quick-pill-attention {
     box-shadow:
       0 0 0 1px var(--apex-teal-glow),
-      0 0 20px -6px var(--apex-emerald-glow);
+      0 0 20px -6px var(--apex-gold-glow);
   }
 
   .dark .apex-quick-pill-gold:hover {
-    color: oklch(0.94 0.03 162);
-    background: oklch(0.52 0.12 162 / 16%);
-    border-color: oklch(0.69 0.16 162 / 35%);
+    color: oklch(0.96 0.04 85);
+    background: oklch(0.55 0.08 85 / 16%);
+    border-color: oklch(0.72 0.08 85 / 35%);
   }
 
   .dark .apex-quick-pill-teal:hover {
-    background: oklch(0.52 0.11 180 / 18%);
-    border-color: oklch(0.7 0.13 180 / 35%);
+    background: oklch(0.52 0.1 195 / 18%);
+    border-color: oklch(0.62 0.12 195 / 35%);
   }
 
   .dark .apex-quick-pill-violet:hover {
-    background: oklch(0.52 0.13 295 / 16%);
-    border-color: oklch(0.66 0.15 295 / 32%);
+    background: oklch(0.52 0.1 300 / 16%);
+    border-color: oklch(0.62 0.1 300 / 32%);
   }
 
   .dark .apex-empty-state {
     @apply rounded-2xl border-2 border-dashed;
-    border-color: oklch(0.55 0.01 285 / 22%);
-    background: oklch(0.17 0.004 285 / 40%);
+    border-color: oklch(0.45 0.02 265 / 22%);
+    background: oklch(0.14 0.01 265 / 40%);
   }
 
   .dark .apex-cmdk-dialog {
-    border: 1px solid oklch(0.55 0.05 162 / 22%) !important;
-    background: oklch(0.17 0.006 285 / 98%) !important;
+    border: 1px solid oklch(0.55 0.04 85 / 22%) !important;
+    background: oklch(0.14 0.012 265 / 98%) !important;
     box-shadow:
       0 24px 64px -16px oklch(0 0 0 / 65%),
-      0 0 0 1px oklch(0.55 0.05 162 / 10%) !important;
+      0 0 0 1px oklch(0.55 0.04 85 / 10%) !important;
   }
 
   .dark .apex-cmdk-item[data-selected="true"] {
     background: linear-gradient(
       90deg,
-      oklch(0.55 0.1 162 / 18%) 0%,
-      oklch(0.24 0.006 285) 100%
+      oklch(0.55 0.05 85 / 18%) 0%,
+      oklch(0.22 0.014 265) 100%
     ) !important;
   }
 
@@ -917,15 +924,15 @@
 
   .dark .apex-chart-card:hover {
     box-shadow: 0 8px 32px -12px oklch(0 0 0 / 45%);
-    border-color: oklch(0.68 0.13 180 / 18%);
+    border-color: oklch(0.55 0.1 195 / 18%);
   }
 
   .dark .apex-health-card {
     background: linear-gradient(
       135deg,
-      oklch(0.232 0.006 285) 0%,
-      oklch(0.21 0.02 185 / 90%) 50%,
-      oklch(0.198 0.006 285) 100%
+      oklch(0.22 0.028 265) 0%,
+      oklch(0.19 0.025 195 / 90%) 50%,
+      oklch(0.18 0.022 265) 100%
     );
   }
 
@@ -938,11 +945,11 @@
   }
 
   .dark .apex-tenant-summary {
-    background: linear-gradient(135deg, oklch(0.225 0.006 285 / 80%) 0%, oklch(0.205 0.006 285) 100%);
+    background: linear-gradient(135deg, oklch(0.2 0.02 265 / 80%) 0%, oklch(0.18 0.018 265) 100%);
   }
 
   .dark .apex-health-pill:hover {
-    box-shadow: 0 0 20px -4px oklch(0.55 0.1 180 / 35%);
+    box-shadow: 0 0 20px -4px oklch(0.55 0.1 195 / 35%);
   }
 
   .recharts-cartesian-grid-horizontal line,

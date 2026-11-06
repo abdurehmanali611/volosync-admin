@@ -4,22 +4,23 @@ import {
   Building2,
   CreditCard,
   FileText,
-  Handshake,
   LayoutDashboard,
   MessageCircle,
   Puzzle,
   Tags,
   UserPlus,
   Users,
+  Handshake,
 } from "lucide-react";
 
-/** Badge keys derivable from the polled dashboard payload (see lib/admin/dashboard.tsx). */
 export type ApexNavBadgeKey =
   | "pendingSetupPayments"
   | "pendingYearlyPayments"
-  | "pendingModuleRequests"
+  | "setupPendingTenants"
+  | "inactiveTenants"
   | "unreadFeedback"
-  | "inactiveTenants";
+  | "pendingModuleRequests"
+  | "disabledUsers";
 
 export type ApexNavItem = {
   id: string;
@@ -46,7 +47,14 @@ export const APEX_MAIN_NAV: ApexNavItem[] = [
     icon: Building2,
     matchPrefix: true,
   },
-  { id: "users", href: "/users", label: "Tenant users", icon: Users },
+  {
+    id: "users",
+    href: "/users",
+    label: "Tenant users",
+    icon: Users,
+    matchPrefix: true,
+    badgeKey: "disabledUsers",
+  },
 ];
 
 export const APEX_MONITORING_NAV: ApexNavItem[] = [
@@ -99,6 +107,7 @@ export const APEX_ACTION_NAV: ApexNavItem[] = [
     href: "/signups",
     label: "New signups",
     icon: UserPlus,
+    badgeKey: "setupPendingTenants",
   },
   {
     id: "inactive-tenants",
@@ -110,7 +119,7 @@ export const APEX_ACTION_NAV: ApexNavItem[] = [
   {
     id: "feedback",
     href: "/feedback",
-    label: "Feedback",
+    label: "Wholesaler chat",
     icon: MessageCircle,
     matchPrefix: true,
     badgeKey: "unreadFeedback",

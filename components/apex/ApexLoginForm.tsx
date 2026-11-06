@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import CustomFormField, { formFieldTypes } from "@/components/customFormField";
-import { ArrowRight } from "lucide-react";
 import { PendingButton } from "@/components/ui/pending-button";
 import {
   Card,
@@ -16,31 +16,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { apexLoginAction, mapLoginError } from "@/lib/admin/core";
-import { getApexToken } from "@/lib/admin/session";
+import { apexLoginAction, mapApexLoginError } from "@/lib/apex/actions";
+import { getApexToken } from "@/lib/apex/auth";
 import { ApexLogo } from "@/components/apex/ApexLogo";
 
-const loginSchema = z.object({
-  username: z.string().trim().min(2, "Username required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+const schema = z.object({
+  UserName: z.string().trim().min(2, "Username required"),
+  Password: z.string().min(6, "Password required"),
 });
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-
-/** Plain zod resolver — `@hookform/resolvers` is not installed in this app. */
-const loginResolver: Resolver<LoginFormValues> = async (values) => {
-  const parsed = loginSchema.safeParse(values);
-  if (parsed.success) return { values: parsed.data, errors: {} };
-
-  const errors: Record<string, { type: string; message: string }> = {};
-  for (const issue of parsed.error.issues) {
-    const key = String(issue.path[0] ?? "");
-    if (key && !errors[key]) {
-      errors[key] = { type: String(issue.code), message: issue.message };
-    }
-  }
-  return { values: {}, errors: errors as FieldErrors<LoginFormValues> };
-};
 
 const fieldClass =
   "h-11 w-full border-border/60 bg-background/80 focus-visible:ring-primary/45";
@@ -49,9 +32,9 @@ export function ApexLoginForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const form = useForm<LoginFormValues>({
-    resolver: loginResolver,
-    defaultValues: { username: "", password: "" },
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: { UserName: "", Password: "" },
   });
 
   useEffect(() => {
@@ -67,22 +50,22 @@ export function ApexLoginForm() {
   return (
     <div className="w-full max-w-md space-y-6">
       <div className="space-y-1 lg:hidden">
-        <p className="text-sm font-medium text-muted-foreground">VoloSync · Apex</p>
+        <p className="text-sm font-medium text-muted-foreground">Apex · VoloSync</p>
         <h2 className="apex-gradient-text text-2xl font-bold tracking-tight">Sign in</h2>
       </div>
 
-      <Card className="apex-glass-card overflow-hidden border-border/50 bg-card/95 shadow-2xl backdrop-blur-md">
-        <div className="h-1 w-full bg-linear-to-r from-primary via-[oklch(0.68_0.13_180)] to-[oklch(0.62_0.1_300)]" />
+      <Card className="apex-glass-card gap-6 overflow-hidden border-border/50 bg-card/95 py-6 shadow-2xl backdrop-blur-md">
+        <div className="h-1 w-full bg-linear-to-r from-primary via-[var(--apex-gold)] to-[var(--apex-teal)]" />
         <div className="h-px w-full bg-linear-to-r from-transparent via-primary/40 to-transparent" />
-        <CardHeader className="space-y-1 pb-2">
+        <CardHeader className="space-y-1 px-6 pb-2">
           <CardTitle className="hidden text-xl font-semibold lg:block">
             <span className="apex-gradient-text">Sign in</span>
           </CardTitle>
           <CardDescription>
-            Single Apex operations credential (platform superuser or staff)
+            Single Apex operations credential (Django platform admin)
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6">
           <Form {...form}>
             <form
               className="space-y-6"
@@ -90,12 +73,12 @@ export function ApexLoginForm() {
                 setLoading(true);
                 setError(null);
                 try {
-                  await apexLoginAction(values.username, values.password);
+                  await apexLoginAction(values.UserName, values.Password);
                   toast.success("Welcome back");
                   form.reset();
                   router.push("/dashboard");
                 } catch (e) {
-                  const msg = mapLoginError(e);
+                  const msg = mapApexLoginError(e);
                   setError(msg);
                   toast.error(msg);
                 } finally {
@@ -107,7 +90,7 @@ export function ApexLoginForm() {
                 <ApexLogo
                   size={72}
                   priority
-                  className="drop-shadow-[0_0_20px_oklch(0.55_0.04_162/0.25)]"
+                  className="drop-shadow-[0_0_20px_oklch(0.55_0.04_85/0.25)]"
                 />
                 <p className="text-center text-sm text-muted-foreground sm:text-left">
                   Apex Solution — operations & monitoring
@@ -116,7 +99,7 @@ export function ApexLoginForm() {
 
               <div className="flex w-full flex-col gap-4 [&_.flex]:w-full [&_input]:w-full">
                 <CustomFormField
-                  name="username"
+                  name="UserName"
                   control={form.control}
                   fieldType={formFieldTypes.INPUT}
                   label="Username"
@@ -124,12 +107,12 @@ export function ApexLoginForm() {
                   className={fieldClass}
                 />
                 <CustomFormField
-                  name="password"
+                  name="Password"
                   control={form.control}
                   fieldType={formFieldTypes.INPUT}
                   label="Password"
                   type="password"
-                  placeholder="Your password"
+                  placeholder="Your admin password"
                   className={fieldClass}
                 />
                 {error ? (
@@ -142,20 +125,12 @@ export function ApexLoginForm() {
                 ) : null}
                 <PendingButton
                   type="submit"
+                  variant="apex"
                   size="lg"
-                  className="group relative h-11 w-full overflow-hidden rounded-lg bg-linear-to-r from-apex-emerald via-[oklch(0.6_0.14_170)] to-apex-teal font-semibold text-white shadow-[0_8px_24px_-8px_var(--apex-emerald-glow),inset_0_1px_0_oklch(1_0_0/0.18)] transition-all duration-300 hover:shadow-[0_12px_30px_-8px_var(--apex-emerald-glow),inset_0_1px_0_oklch(1_0_0/0.25)] hover:brightness-110 focus-visible:ring-3 focus-visible:ring-apex-emerald/40 active:translate-y-px"
+                  className="h-11 w-full"
                   pending={loading}
                 >
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
-                  />
-                  <span className="relative inline-flex items-center gap-2">
-                    {loading ? "Signing in" : "Continue to dashboard"}
-                    {loading ? null : (
-                      <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    )}
-                  </span>
+                  Continue to dashboard
                 </PendingButton>
               </div>
             </form>

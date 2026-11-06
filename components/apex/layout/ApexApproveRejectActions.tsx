@@ -15,7 +15,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-/** Approve / reject pair for payment, setup-payment, and module-request queues. */
 export function ApexApproveRejectActions({
   busy,
   onApprove,

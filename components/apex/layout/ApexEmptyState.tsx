@@ -15,7 +15,7 @@ export function ApexEmptyState({
   return (
     <div className="apex-empty-state flex flex-col items-center justify-center gap-6 px-6 py-20 text-center">
       <div className="apex-empty-icon">
-        <Icon className="relative h-7 w-7 text-[oklch(0.82_0.04_162)]" />
+        <Icon className="relative h-7 w-7 text-[oklch(0.82_0.04_85)]" />
       </div>
       <div className="max-w-md space-y-2">
         <p className="text-lg font-semibold tracking-tight text-foreground">{title}</p>

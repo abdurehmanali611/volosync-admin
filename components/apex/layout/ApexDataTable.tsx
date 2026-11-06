@@ -3,19 +3,14 @@
 import * as React from "react";
 import {
   flexRender,
-  type OnChangeFn,
-  type PaginationState,
-  type RowData,
-} from "@tanstack/react-table";
-import {
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  type LegacyColumnDef,
-  type LegacyRow,
-  useLegacyTable,
-} from "@tanstack/react-table/legacy";
-import type { ColumnVisibilityState } from "@tanstack/table-core";
+  type ColumnDef,
+  type PaginationState,
+  type VisibilityState,
+  useReactTable,
+} from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, Search, Settings2 } from "lucide-react";
 import { ApexTableWrap } from "@/components/apex/layout/ApexPanel";
 import { Button } from "@/components/ui/button";
@@ -36,9 +31,9 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-type ApexDataTableProps<TData extends RowData> = {
+type ApexDataTableProps<TData> = {
   data: TData[];
-  columns: LegacyColumnDef<TData, unknown>[];
+  columns: ColumnDef<TData, unknown>[];
   emptyState?: React.ReactNode;
   pageSize?: number;
   noun?: string;
@@ -65,10 +60,10 @@ function stringifySearchValue(value: unknown): string {
   return "";
 }
 
-function columnVisibilityLabel<TData extends RowData>(
+function columnVisibilityLabel<TData>(
   column: {
     id: string;
-    columnDef: LegacyColumnDef<TData, unknown>;
+    columnDef: ColumnDef<TData, unknown>;
   },
 ): string {
   const meta = column.columnDef.meta as { label?: string } | undefined;
@@ -83,7 +78,7 @@ function columnVisibilityLabel<TData extends RowData>(
     .trim();
 }
 
-export function ApexDataTable<TData extends RowData>({
+export function ApexDataTable<TData>({
   data,
   columns,
   emptyState,
@@ -99,19 +94,16 @@ export function ApexDataTable<TData extends RowData>({
     pageIndex: 0,
     pageSize,
   });
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<ColumnVisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = React.useState("");
 
-  // Reset to the first page when the caller changes the page size.
-  // (Derived during render instead of a setState-in-effect cascade.)
-  const [lastPageSize, setLastPageSize] = React.useState(pageSize);
-  if (lastPageSize !== pageSize) {
-    setLastPageSize(pageSize);
-    setPagination({ pageIndex: 0, pageSize });
-  }
+  React.useEffect(() => {
+    setPagination((current) =>
+      current.pageSize === pageSize ? current : { pageIndex: 0, pageSize },
+    );
+  }, [pageSize]);
 
-  const table = useLegacyTable({
+  const table = useReactTable({
     data,
     columns,
     state: {
@@ -119,17 +111,13 @@ export function ApexDataTable<TData extends RowData>({
       columnVisibility,
       globalFilter,
     },
-    onPaginationChange: setPagination as OnChangeFn<PaginationState>,
+    onPaginationChange: setPagination,
     onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: setGlobalFilter,
-    getCoreRowModel: getCoreRowModel<TData>(),
-    getFilteredRowModel: getFilteredRowModel<TData>(),
-    getPaginationRowModel: getPaginationRowModel<TData>(),
-    globalFilterFn: (
-      row: LegacyRow<TData>,
-      _columnId: string,
-      filterValue: unknown,
-    ): boolean => {
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    globalFilterFn: (row, _columnId, filterValue) => {
       const needle = String(filterValue ?? "").trim().toLowerCase();
       if (!needle) return true;
       return stringifySearchValue(row.original).toLowerCase().includes(needle);
@@ -220,7 +208,7 @@ export function ApexDataTable<TData extends RowData>({
                     <TableHead
                       key={header.id}
                       className={cn(
-                        "h-11 px-3 text-[11px] font-semibold tracking-[0.16em] text-[oklch(0.78_0.03_162)] uppercase",
+                        "h-11 px-3 text-[11px] font-semibold tracking-[0.16em] text-[oklch(0.78_0.03_85)] uppercase",
                         meta?.headerClassName,
                       )}
                       style={{
@@ -262,7 +250,10 @@ export function ApexDataTable<TData extends RowData>({
                   return (
                     <TableCell
                       key={cell.id}
-                      className={cn("px-3 py-3.5 align-top", meta?.className)}
+                      className={cn(
+                        "px-3 py-3.5 align-top",
+                        meta?.className,
+                      )}
                       style={{
                         ...(typeof size === "number" ? { width: size } : null),
                         ...(typeof minSize === "number" ? { minWidth: minSize } : null),

@@ -59,7 +59,9 @@ function CommandDialog({
         )}
         showCloseButton={showCloseButton}
       >
-        {children}
+        <Command className="**:[[cmdk-group-heading]]:text-muted-foreground h-full">
+          {children}
+        </Command>
       </DialogContent>
     </Dialog>
   )

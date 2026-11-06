@@ -2,9 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getApexToken } from "@/lib/admin/session";
+import { getApexToken } from "@/lib/apex/auth";
 
-/** Sends unauthenticated visitors back to the login page. Returns auth state. */
 export function useApexRouteGuard() {
   const router = useRouter();
   const authed = Boolean(getApexToken());

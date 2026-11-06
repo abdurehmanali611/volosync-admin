@@ -1,224 +1,109 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import type { LegacyColumnDef } from "@tanstack/react-table/legacy";
-import { Phone, UserPlus } from "lucide-react";
-import { ApexDataTable } from "@/components/apex/layout/ApexDataTable";
-import { ApexEmptyState } from "@/components/apex/layout/ApexEmptyState";
-import { ApexInfoBanner } from "@/components/apex/layout/ApexInfoBanner";
+import { useCallback, useEffect, useState } from "react";
+import { Phone } from "lucide-react";
+import {
+  fetchMonthlySignups,
+  invalidateApexCaches,
+  type MonthlySignupRow,
+} from "@/lib/apex/actions";
+import { ApexPageHeader } from "@/components/apex/layout/ApexPageHeader";
 import { ApexPanel } from "@/components/apex/layout/ApexPanel";
+import { ApexTableSkeleton } from "@/components/apex/layout/ApexTableSkeleton";
+import { ApexErrorAlert } from "@/components/apex/layout/ApexErrorAlert";
+import { ApexInfoBanner } from "@/components/apex/layout/ApexInfoBanner";
+import { ApexSignupsTable } from "@/components/apex/signups/ApexSignupsTable";
+import { useLoadCoordinator } from "@/hooks/useLoadCoordinator";
+import { useApexDashboard } from "@/lib/apex/dashboard-context";
+import { mapApexApiError } from "@/lib/apex/api";
+import { ApexCreateTenantTrigger } from "@/components/apex/onboarding/ApexCreateTenantTrigger";
 import {
-  ApexQueuePage,
-  ApexQueueStats,
-  dateLabel,
-  useQueue,
-} from "@/components/apex/platform/ApexQueuePage";
-import { ApexPillTabs } from "@/components/apex/platform/ApexPillTabs";
-import { ApexCreateTenantDialog } from "@/components/apex/platform/ApexCreateTenantDialog";
-import {
-  DecisionStatusBadge,
-  SubscriptionStatusBadge,
-} from "@/components/apex/StatusBadge";
-import { Badge } from "@/components/ui/badge";
-import { money } from "@/lib/admin/api";
-import { fetchSignups, type SignupRow } from "@/lib/admin/platform";
-
-const WHATSAPP = ["+251935000642", "+251930272975"];
+  APEX_BANK_ACCOUNT,
+  APEX_BANK_NAME,
+  APEX_ESCALATION_WHATSAPP,
+} from "@/constants/apexContacts";
 
 export default function SignupsPage() {
-  const queue = useQueue(fetchSignups);
-  const [filter, setFilter] = React.useState("ALL");
+  const [rows, setRows] = useState<MonthlySignupRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const coordinator = useLoadCoordinator();
+  const { refresh: refreshSummary } = useApexDashboard();
 
-  const rows = React.useMemo(
-    () =>
-      filter === "ALL"
-        ? queue.rows
-        : queue.rows.filter((r) => r.setup_status === filter),
-    [queue.rows, filter],
+  const load = useCallback(
+    (force = false) => {
+      if (force) {
+        invalidateApexCaches("apex:signups");
+        invalidateApexCaches("apex:tenants");
+        invalidateApexCaches("apex:tenant-payments");
+        invalidateApexCaches("apex:payments");
+      }
+      void coordinator.run(async (isStale) => {
+        setLoading(true);
+        setError(null);
+        try {
+          const list = await fetchMonthlySignups();
+          if (!isStale()) setRows(list);
+        } catch (e) {
+          const msg = mapApexApiError(e, "Failed to load signups");
+          if (!isStale() && msg) setError(msg);
+        } finally {
+          if (!isStale()) setLoading(false);
+        }
+      });
+    },
+    [coordinator],
   );
 
-  const columns = React.useMemo<LegacyColumnDef<SignupRow, unknown>[]>(
-    () => [
-      {
-        accessorKey: "name",
-        header: "Business",
-        cell: ({ row }) => (
-          <div className="min-w-0">
-            <Link
-              href={`/tenants/${row.original.id}`}
-              className="truncate font-medium hover:text-apex-emerald hover:underline"
-            >
-              {row.original.name}
-            </Link>
-            <p className="font-mono text-[11px] text-muted-foreground">
-              {row.original.tin}
-            </p>
-          </div>
-        ),
-      },
-      {
-        accessorKey: "sales_agent",
-        header: "Agent",
-        cell: ({ row }) => (
-          <span className="text-sm text-muted-foreground">
-            {row.original.sales_agent || "Direct"}
-          </span>
-        ),
-      },
-      {
-        id: "modules",
-        header: "Modules",
-        cell: ({ row }) => (
-          <div className="flex flex-wrap gap-1">
-            <Badge
-              variant="outline"
-              className="border-transparent bg-apex-emerald/12 text-[10px] uppercase text-apex-emerald"
-            >
-              Cred
-            </Badge>
-            {row.original.module_inventory ? (
-              <Badge
-                variant="outline"
-                className="border-transparent bg-apex-teal/12 text-[10px] uppercase text-apex-teal"
-              >
-                Inv
-              </Badge>
-            ) : null}
-            {row.original.module_hr ? (
-              <Badge
-                variant="outline"
-                className="border-transparent bg-apex-violet/12 text-[10px] uppercase text-[oklch(0.85_0.1_295)]"
-              >
-                HR
-              </Badge>
-            ) : null}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "created_at",
-        header: "Signed up",
-        cell: ({ row }) => (
-          <span className="text-sm text-muted-foreground">
-            {dateLabel(row.original.created_at)}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "setup_status",
-        header: "Setup payment",
-        cell: ({ row }) => (
-          <div className="space-y-1">
-            <DecisionStatusBadge status={row.original.setup_status} />
-            {row.original.setup_amount ? (
-              <p className="text-[11px] tabular-nums text-muted-foreground">
-                {money(row.original.setup_amount)}
-              </p>
-            ) : null}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "subscription_state",
-        header: "Subscription",
-        cell: ({ row }) => (
-          <SubscriptionStatusBadge status={row.original.subscription_state} />
-        ),
-      },
-    ],
-    [],
-  );
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
-    <ApexQueuePage
-      title="New signups"
-      description="Wholesalers that joined this month — filter by pending, approved or rejected setup."
-      breadcrumbs={[
-        { label: "Overview", href: "/dashboard" },
-        { label: "New signups" },
-      ]}
-      actions={
-        <ApexCreateTenantDialog>Create tenant manually</ApexCreateTenantDialog>
-      }
-      loading={queue.loading}
-      error={queue.error}
-      columns={6}
-    >
-      <div className="space-y-4">
-        <ApexInfoBanner icon={Phone}>
-          Escalation WhatsApp: {WHATSAPP.join(" · ")}
-        </ApexInfoBanner>
-        <ApexQueueStats
-          items={[
-            { label: "This month", value: queue.rows.length, tone: "emerald" },
-            {
-              label: "Setup pending",
-              value: queue.rows.filter((r) => r.setup_status === "PENDING")
-                .length,
-              tone: "amber",
-            },
-            {
-              label: "Setup approved",
-              value: queue.rows.filter((r) => r.setup_status === "APPROVED")
-                .length,
-              tone: "emerald",
-            },
-            {
-              label: "Via agents",
-              value: queue.rows.filter((r) => r.sales_agent).length,
-              tone: "sky",
-            },
-          ]}
-        />
-        <ApexPillTabs
-          value={filter}
-          onChange={setFilter}
-          tabs={[
-            { value: "ALL", label: "All", count: queue.rows.length },
-            {
-              value: "PENDING",
-              label: "Pending",
-              count: queue.rows.filter((r) => r.setup_status === "PENDING")
-                .length,
-            },
-            {
-              value: "APPROVED",
-              label: "Approved",
-              count: queue.rows.filter((r) => r.setup_status === "APPROVED")
-                .length,
-            },
-            {
-              value: "REJECTED",
-              label: "Rejected",
-              count: queue.rows.filter((r) => r.setup_status === "REJECTED")
-                .length,
-            },
-          ]}
-        />
-        <ApexPanel>
-          {rows.length === 0 ? (
-            <ApexEmptyState
-              icon={UserPlus}
-              title="No signups this month"
-              description="New wholesalers appear here as soon as they are onboarded."
-              action={
-                <ApexCreateTenantDialog>
-                  Create tenant manually
-                </ApexCreateTenantDialog>
-              }
-            />
-          ) : (
-            <ApexDataTable
-              data={rows}
-              columns={columns}
-              noun="signups"
-              pageSize={12}
-              showToolbar={false}
-            />
-          )}
-        </ApexPanel>
-      </div>
-    </ApexQueuePage>
+    <div className="space-y-8">
+      <ApexPageHeader
+        title="New signups"
+        description="Wholesalers that signed up this month — filter by pending, approved, or rejected setup"
+        actions={
+          <ApexCreateTenantTrigger size="sm" variant="apex" className="h-9 px-4">
+            Create tenant manually
+          </ApexCreateTenantTrigger>
+        }
+      />
+
+      <ApexInfoBanner icon={Phone}>
+        {APEX_ESCALATION_WHATSAPP.length > 0 ? (
+          <>
+            Escalation WhatsApp: {APEX_ESCALATION_WHATSAPP.join(" · ")}
+            {APEX_BANK_ACCOUNT ? " · " : ""}
+          </>
+        ) : null}
+        {APEX_BANK_ACCOUNT ? (
+          <>
+            {APEX_BANK_NAME} account{" "}
+            <span className="font-mono">{APEX_BANK_ACCOUNT}</span>
+          </>
+        ) : null}
+        {APEX_ESCALATION_WHATSAPP.length === 0 && !APEX_BANK_ACCOUNT
+          ? "Configure the Apex escalation contacts to show them on this page."
+          : null}
+      </ApexInfoBanner>
+
+      {error ? <ApexErrorAlert message={error} /> : null}
+
+      <ApexPanel>
+        {loading ? (
+          <ApexTableSkeleton cols={8} />
+        ) : (
+          <ApexSignupsTable
+            rows={rows}
+            onChanged={() => {
+              load(true);
+              void refreshSummary(true);
+            }}
+          />
+        )}
+      </ApexPanel>
+    </div>
   );
 }

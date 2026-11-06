@@ -18,7 +18,8 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
-        apex: "bg-apex-emerald text-white shadow-sm hover:bg-apex-emerald/90 focus-visible:border-apex-emerald/40 focus-visible:ring-apex-emerald/30",
+        apex:
+          "font-semibold bg-linear-to-r from-[var(--apex-teal)] to-[var(--apex-gold)] text-[oklch(0.17_0.03_195)] shadow-md shadow-black/25 ring-1 ring-[var(--apex-teal)]/40 hover:brightness-110 hover:shadow-lg",
         success:
           "bg-success text-white hover:bg-success/90 focus-visible:border-success/40 focus-visible:ring-success/30",
       },

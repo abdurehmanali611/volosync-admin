@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -33,7 +27,14 @@ export function ApexPanel({
           ) : null}
         </CardHeader>
       ) : null}
-      <CardContent className={cn("p-0", contentClassName)}>{children}</CardContent>
+      <CardContent
+        className={cn(
+          hasHeader ? "p-0" : "p-0",
+          contentClassName,
+        )}
+      >
+        {children}
+      </CardContent>
     </Card>
   );
 }

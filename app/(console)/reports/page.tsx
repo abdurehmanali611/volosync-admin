@@ -1,338 +1,246 @@
 "use client";
 
-import * as React from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { BarChart3, Download, RefreshCw } from "lucide-react";
 import {
-  BarChart3,
-  Building2,
-  Coins,
-  Download,
-  FileText,
-  Package,
-  Users,
-} from "lucide-react";
-import { ApexActivityBarChart } from "@/components/apex/charts/ApexAreaBarCharts";
-import { ApexDonutChart } from "@/components/apex/charts/ApexDonutChart";
-import { ApexPageHeader } from "@/components/apex/layout/ApexPageHeader";
-import { ApexErrorAlert } from "@/components/apex/layout/ApexErrorAlert";
-import { ApexTableSkeleton } from "@/components/apex/layout/ApexTableSkeleton";
-import { ApexSectionHeader } from "@/components/apex/layout/ApexFilterTabs";
-import { ApexPillTabs } from "@/components/apex/platform/ApexPillTabs";
-import { Button } from "@/components/ui/button";
-import { useSystemRefresh } from "@/hooks/useSystemRefresh";
-import { mapApiError } from "@/lib/admin/core";
-import { money } from "@/lib/admin/api";
-import {
-  fetchPlatformReport,
+  fetchAuditLogs,
+  fetchFeedbackThreads,
+  fetchModuleChangeRequests,
   fetchTenants,
-  type PlatformReport,
   type TenantListItem,
-} from "@/lib/admin/dashboard";
-
-const STATE_META: Record<string, { label: string; color: string }> = {
-  ACTIVE: { label: "Active", color: "oklch(0.68 0.13 162)" },
-  DUE_SOON: { label: "Renewal soon", color: "oklch(0.75 0.12 75)" },
-  EXPIRED: { label: "Expired", color: "oklch(0.62 0.16 25)" },
-  UNPAID: { label: "Never paid", color: "oklch(0.55 0.03 265)" },
-};
+} from "@/lib/apex/actions";
+import { useApexDashboard } from "@/lib/apex/dashboard-context";
+import { ApexPageLoader } from "@/components/apex/ApexPageLoader";
+import { ApexPageHeader } from "@/components/apex/layout/ApexPageHeader";
+import { ApexSectionHeader } from "@/components/apex/layout/ApexFilterTabs";
+import { ApexErrorAlert } from "@/components/apex/layout/ApexErrorAlert";
+import { ApexPortfolioHealth } from "@/components/apex/overview/ApexPortfolioHealth";
+import { ApexDonutChart } from "@/components/apex/charts/ApexDonutChart";
+import { ApexTenantGrowthChart, ApexActivityBarChart } from "@/components/apex/charts/ApexAreaBarCharts";
+import { ApexRevenueCards } from "@/components/apex/reports/ApexRevenueCards";
+import { ApexIssuesPanel } from "@/components/apex/reports/ApexIssuesPanel";
+import { ApexBusinessTypeBreakdown } from "@/components/apex/overview/ApexBusinessTypeBreakdown";
+import { Button } from "@/components/ui/button";
+import { useLoadCoordinator } from "@/hooks/useLoadCoordinator";
+import { mapApexApiError } from "@/lib/apex/api";
+import {
+  aggregateAccountStatus,
+  aggregateAuditActivity,
+  aggregateFeedbackActivity,
+  aggregateModuleRequests,
+  aggregateSubscriptionStatus,
+  aggregateTenantGrowth,
+  buildIssueCategories,
+  estimateRevenue,
+} from "@/lib/apex/analytics";
 
 export default function ReportsPage() {
-  const [report, setReport] = React.useState<PlatformReport | null>(null);
-  const [tenants, setTenants] = React.useState<TenantListItem[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [months, setMonths] = React.useState(6);
-  const [version, setVersion] = React.useState(0);
+  return (
+    <Suspense fallback={<ApexPageLoader label="Loading analytics…" />}>
+      <ReportsContent />
+    </Suspense>
+  );
+}
 
-  const load = React.useCallback(() => setVersion((v) => v + 1), []);
-  const refresh = () => load();
+function ReportsContent() {
+  const { summary, loading: summaryLoading, refresh } = useApexDashboard();
+  const [tenants, setTenants] = useState<TenantListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [auditActivity, setAuditActivity] = useState<{ label: string; value: number; color: string }[]>([]);
+  const [feedbackStats, setFeedbackStats] = useState({ open: 0, closed: 0, unread: 0 });
+  const [moduleSlices, setModuleSlices] = useState<{ label: string; value: number; color: string }[]>([]);
+  const coordinator = useLoadCoordinator();
 
-  // Reload with the shell's single system refresh button.
-  useSystemRefresh(refresh);
-
-  React.useEffect(() => {
-    let alive = true;
-    void Promise.all([fetchPlatformReport(), fetchTenants()])
-      .then(([nextReport, list]) => {
-        if (!alive) return;
-        setReport(nextReport);
-        setTenants(list);
-        setError(null);
-      })
-      .catch((e) => {
-        if (alive) setError(mapApiError(e, "Could not load analytics."));
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [version]);
-
-  const subscriptionSlices = React.useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const tenant of tenants) {
-      counts.set(
-        tenant.subscription_state,
-        (counts.get(tenant.subscription_state) ?? 0) + 1,
+  const loadData = async (isStale?: () => boolean) => {
+    setError(null);
+    try {
+      const [tenantList, logs, threads, modules] = await Promise.all([
+        fetchTenants(),
+        fetchAuditLogs(150),
+        fetchFeedbackThreads(200),
+        fetchModuleChangeRequests(),
+      ]);
+      if (isStale?.()) return;
+      setTenants(tenantList);
+      setAuditActivity(
+        aggregateAuditActivity(logs).map((d) => ({
+          label: d.label,
+          value: d.value,
+          color: d.color,
+        })),
       );
+      setFeedbackStats(aggregateFeedbackActivity(threads));
+      setModuleSlices(
+        aggregateModuleRequests(modules).map((d) => ({
+          label: d.label,
+          value: d.value,
+          color: d.color,
+        })),
+      );
+    } catch (e) {
+      const msg = mapApexApiError(e, "Failed to load analytics");
+      if (!isStale?.() && msg) setError(msg);
     }
-    return [...counts.entries()].map(([key, value]) => ({
-      key,
-      label: STATE_META[key]?.label ?? key,
-      value,
-      color: STATE_META[key]?.color ?? "oklch(0.55 0.03 265)",
-    }));
-  }, [tenants]);
+  };
 
-  const growth = React.useMemo(() => {
-    const now = new Date();
-    const buckets: { label: string; value: number; color: string }[] = [];
-    for (let i = months - 1; i >= 0; i -= 1) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const label = d.toLocaleDateString("en-GB", { month: "short" });
-      const value = tenants.filter((t) => {
-        if (!t.created_at) return false;
-        const c = new Date(t.created_at);
-        return (
-          c.getFullYear() === d.getFullYear() && c.getMonth() === d.getMonth()
-        );
-      }).length;
-      buckets.push({ label, value, color: "oklch(0.68 0.13 162)" });
-    }
-    return buckets;
-  }, [tenants, months]);
-
-  const feeByModule = React.useMemo(() => {
-    const inventory = tenants.filter((t) => t.module_inventory).length;
-    const hr = tenants.filter((t) => t.module_hr).length;
-    const sales = tenants.filter((t) => t.sales_role_enabled).length;
-    return [
-      {
-        key: "credentials",
-        label: "Credentials",
-        value: tenants.length,
-        color: "oklch(0.68 0.13 162)",
-      },
-      { key: "inventory", label: "Inventory", value: inventory, color: "oklch(0.68 0.13 180)" },
-      { key: "hr", label: "HR", value: hr, color: "oklch(0.62 0.1 300)" },
-      { key: "sales", label: "Sales role", value: sales, color: "oklch(0.72 0.1 250)" },
-    ];
-  }, [tenants]);
-
-  const exportCsv = () => {
-    if (!report) return;
-    const header = [
-      "Tenant",
-      "TIN",
-      "Type",
-      "State",
-      "Annual fee",
-      "Staff",
-      "Lots",
-      "Stock value",
-      "Payments",
-    ];
-    const lines = [
-      header.join(","),
-      ...report.rows.map((row) =>
-        [
-          `"${row.tenant.replace(/"/g, '""')}"`,
-          row.tin,
-          row.is_branch ? "Branch" : "Main",
-          row.state,
-          row.annual_fee,
-          row.staff_count,
-          row.lot_count,
-          row.stock_value,
-          row.payments_count,
-        ].join(","),
-      ),
-    ];
-    const blob = new Blob([lines.join("\n")], {
-      type: "text/csv;charset=utf-8",
+  useEffect(() => {
+    void coordinator.run(async (isStale) => {
+      setLoading(true);
+      await loadData(isStale);
+      if (!isStale()) setLoading(false);
     });
+  }, [coordinator]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refresh(true);
+      await loadData();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  if ((loading || summaryLoading) && !summary) {
+    return <ApexPageLoader label="Building analytics…" />;
+  }
+
+  if (!summary) {
+    return (
+      <div className="space-y-6">
+        <ApexPageHeader title="Analytics & reports" description="Portfolio intelligence" />
+        <ApexErrorAlert message={error ?? "Unable to load dashboard summary."} />
+      </div>
+    );
+  }
+
+  const subscriptionData = aggregateSubscriptionStatus(tenants);
+  const accountData = aggregateAccountStatus(tenants);
+  const growthData = aggregateTenantGrowth(tenants);
+  const revenue = estimateRevenue(tenants);
+  const issues = buildIssueCategories(tenants, summary);
+
+  const exportSummary = () => {
+    const report = {
+      generatedAt: new Date().toISOString(),
+      portfolioHealth: summary,
+      revenue,
+      subscriptionBreakdown: subscriptionData,
+      accountBreakdown: accountData,
+      issues,
+      feedback: feedbackStats,
+      tenantCount: tenants.length,
+    };
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `volosync-platform-${new Date().toISOString().slice(0, 10)}.csv`;
-    anchor.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `volosync-analytics-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <ApexPageHeader
         title="Analytics & reports"
-        description="Visual intelligence across tenants, billing, modules and portfolio growth."
-        breadcrumbs={[
-          { label: "Overview", href: "/dashboard" },
-          { label: "Analytics" },
-        ]}
+        description="Visual intelligence across tenants, billing, issues, and portfolio growth"
         actions={
-          <Button
-            variant="apex"
-            size="sm"
-            className="cursor-pointer"
-            disabled={!report}
-            onClick={exportCsv}
-          >
-            <Download className="mr-2 size-4" /> Export report
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="cursor-pointer"
+              onClick={() => void onRefresh()}
+              disabled={refreshing}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+            <Button variant="apex" size="sm" className="cursor-pointer" onClick={exportSummary}>
+              <Download className="mr-2 h-4 w-4" />
+              Export report
+            </Button>
+          </div>
         }
       />
 
       {error ? <ApexErrorAlert message={error} /> : null}
 
-      {loading && !report ? (
-        <ApexTableSkeleton cols={4} />
-      ) : report ? (
-        <>
-          <section className="space-y-4">
-            <ApexSectionHeader
-              title="Revenue snapshot"
-              description="Recurring and pipeline revenue from current tenant fees (ETB)."
-            />
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard
-                icon={Coins}
-                label="Annual fees"
-                value={money(report.totals.annual_fee)}
-                hint="Sum of every tenant's yearly fee"
-              />
-              <StatCard
-                icon={Users}
-                label="Staff accounts"
-                value={String(report.totals.staff)}
-                hint="Active logins across all tenants"
-              />
-              <StatCard
-                icon={Package}
-                label="Stock under management"
-                value={money(report.totals.stock_value)}
-                hint={`${report.totals.lots} lots in the ledger`}
-              />
-              <StatCard
-                icon={FileText}
-                label="Payments recorded"
-                value={String(report.totals.payments)}
-                hint="Every subscription transaction"
-              />
+      <ApexPortfolioHealth summary={summary} tenants={tenants} />
+
+      <section className="space-y-5">
+        <ApexSectionHeader
+          title="Revenue snapshot"
+          description="Estimated recurring and pipeline revenue from current tenant fees (ETB)."
+        />
+        <ApexRevenueCards revenue={revenue} />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <ApexDonutChart
+          title="Subscription health"
+          description="Distribution of subscription statuses across all wholesalers"
+          data={subscriptionData}
+          centerValue={summary.totalTenants}
+          centerLabel="Total"
+        />
+        <ApexDonutChart
+          title="Account status"
+          description="Active, suspended, and banned wholesaler accounts"
+          data={accountData}
+          centerValue={accountData.find((d) => d.key === "active")?.value ?? 0}
+          centerLabel="Active"
+        />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <ApexTenantGrowthChart data={growthData} />
+        <ApexActivityBarChart
+          title="Admin activity (14 days)"
+          description="Apex team actions logged in the audit trail"
+          data={auditActivity}
+        />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <ApexActivityBarChart
+          title="Module change requests"
+          description="Pending, approved, and rejected module requests"
+          data={moduleSlices}
+        />
+        <ApexIssuesPanel issues={issues} />
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-2">
+        <ApexBusinessTypeBreakdown summary={summary} />
+        <div className="apex-panel-surface rounded-xl border-2 p-5">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-primary" />
+            <p className="text-sm font-semibold text-foreground">Wholesaler chat summary</p>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="rounded-lg bg-white/4 p-3 text-center ring-1 ring-white/8">
+              <p className="text-2xl font-bold tabular-nums text-foreground">{feedbackStats.open}</p>
+              <p className="text-[11px] text-muted-foreground">Open threads</p>
             </div>
-          </section>
-
-          <section className="grid gap-6 xl:grid-cols-2">
-            <ApexDonutChart
-              title="Subscription health"
-              description="Distribution of subscription states across all tenants"
-              data={subscriptionSlices}
-              centerValue={String(report.totals.tenants)}
-              centerLabel="Tenants"
-            />
-            <ApexDonutChart
-              title="Module adoption"
-              description="How many tenants run each module — Credentials is always on"
-              data={feeByModule}
-              centerValue={String(report.totals.tenants)}
-              centerLabel="Tenants"
-            />
-          </section>
-
-          <section className="space-y-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <ApexSectionHeader
-                title="Tenant growth"
-                description="New wholesalers onboarded per month."
-              />
-              <ApexPillTabs
-                value={String(months)}
-                onChange={(v) => setMonths(Number(v))}
-                tabs={[
-                  { value: "6", label: "6 months" },
-                  { value: "12", label: "12 months" },
-                ]}
-              />
+            <div className="rounded-lg bg-white/4 p-3 text-center ring-1 ring-white/8">
+              <p className="text-2xl font-bold tabular-nums text-foreground">{feedbackStats.unread}</p>
+              <p className="text-[11px] text-muted-foreground">Unread</p>
             </div>
-            <ApexActivityBarChart
-              title="Signups per month"
-              description="Tenants created in each calendar month"
-              data={growth}
-              emptyTitle="No signups yet"
-              emptyDescription="Create a tenant to see growth here."
-            />
-          </section>
-
-          <section className="space-y-4">
-            <ApexSectionHeader
-              title="Portfolio breakdown"
-              description="Companies versus branches and where the money sits."
-            />
-            <div className="grid gap-3 sm:grid-cols-3">
-              <StatCard
-                icon={Building2}
-                label="Companies"
-                value={String(report.rows.filter((r) => !r.is_branch).length)}
-                hint="Top-level wholesalers"
-              />
-              <StatCard
-                icon={BarChart3}
-                label="Branches"
-                value={String(report.rows.filter((r) => r.is_branch).length)}
-                hint="Child locations"
-              />
-              <StatCard
-                icon={Coins}
-                label="Needs attention"
-                value={String(
-                  report.rows.filter((r) => r.state !== "ACTIVE").length,
-                )}
-                hint="Renewal due, expired or never paid"
-              />
+            <div className="rounded-lg bg-white/4 p-3 text-center ring-1 ring-white/8">
+              <p className="text-2xl font-bold tabular-nums text-foreground">{feedbackStats.closed}</p>
+              <p className="text-[11px] text-muted-foreground">Closed</p>
             </div>
-          </section>
-
-          <p className="text-center text-xs text-muted-foreground">
-            Need a detailed ledger?{" "}
-            <Link href="/tenants" className="text-apex-emerald hover:underline">
-              Open the tenant list
-            </Link>
-            .
-          </p>
-        </>
-      ) : null}
-    </div>
-  );
-}
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  hint,
-}: {
-  icon: typeof Coins;
-  label: string;
-  value: string;
-  hint: string;
-}) {
-  return (
-    <div className="apex-panel-surface group relative overflow-hidden rounded-xl border border-white/8 p-4 transition-colors hover:border-apex-emerald/25">
-      <div className="pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-apex-emerald/8 blur-2xl transition-opacity group-hover:opacity-100" />
-      <div className="relative flex items-center gap-2">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-apex-emerald/10 text-apex-emerald ring-1 ring-apex-emerald/20">
-          <Icon className="size-4" />
-        </span>
-        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-          {label}
-        </p>
-      </div>
-      <p className="relative mt-3 text-2xl font-semibold tabular-nums text-foreground">
-        {value}
-      </p>
-      <p className="relative mt-1 text-[11px] leading-relaxed text-muted-foreground">
-        {hint}
-      </p>
+          </div>
+          <Button asChild variant="ghost" size="sm" className="mt-4 w-full">
+            <Link href="/feedback">Open wholesaler chat →</Link>
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }

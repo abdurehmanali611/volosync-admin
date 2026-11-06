@@ -24,7 +24,7 @@ export function ApexLogo({
   );
 }
 
-/** Logo in a soft emerald glow — sidebar footer & top bar (replaces initials avatar). */
+/** Logo in a soft amber glow — sidebar footer & top bar (replaces initials avatar). */
 export function ApexLogoMark({
   size = 40,
   className,
@@ -41,7 +41,7 @@ export function ApexLogoMark({
     >
       <div
         className={cn(
-          "pointer-events-none absolute inset-0 rounded-full bg-[oklch(0.5_0.04_162/0.12)] blur-sm",
+          "pointer-events-none absolute inset-0 rounded-full bg-[oklch(0.5_0.04_85/0.12)] blur-sm",
           glowClassName,
         )}
         aria-hidden

@@ -74,7 +74,7 @@ export type CloudinaryFileUploadResult = {
 
 /**
  * Upload a document with `NEXT_PUBLIC_CLOUDINARY_FILE_PRESET_NAME` (raw upload).
- * Same helper pattern as hotcol-ats CV upload.
+ * Same helper pattern as volosync-ats CV upload.
  */
 export async function uploadFileToCloudinary(
   file: File,

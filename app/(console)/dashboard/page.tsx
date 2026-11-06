@@ -2,55 +2,40 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BarChart3, Building2, CreditCard, LayoutDashboard, UserPlus } from "lucide-react";
-import {
-  useApexDashboard,
-  fetchTenants,
-  fetchPlatformReport,
-  aggregateSubscriptionStatus,
-  aggregateTenantGrowth,
-  buildPortfolioInsights,
-  topTenantsByAnnualFee,
-  type TenantListItem,
-  type PlatformReport,
-} from "@/lib/admin/dashboard";
-import { getApexMember } from "@/lib/admin/session";
+import { BarChart3, Building2, MessageCircle, CreditCard } from "lucide-react";
+import { useApexDashboard } from "@/lib/apex/dashboard-context";
+import { getApexMember } from "@/lib/apex/auth";
+import { fetchTenants, type TenantListItem } from "@/lib/apex/actions";
 import { ApexPageLoader } from "@/components/apex/ApexPageLoader";
 import { ApexPageHeader } from "@/components/apex/layout/ApexPageHeader";
 import { ApexSectionHeader } from "@/components/apex/layout/ApexFilterTabs";
 import { ApexErrorAlert } from "@/components/apex/layout/ApexErrorAlert";
 import { ApexEmptyState } from "@/components/apex/layout/ApexEmptyState";
-import {
-  ApexStatGrid,
-  ApexTotalTenantsBanner,
-} from "@/components/apex/overview/ApexStatGrid";
+import { ApexStatGrid, ApexTotalTenantsBanner } from "@/components/apex/overview/ApexStatGrid";
 import { ApexDashboardQuickActions } from "@/components/apex/overview/ApexDashboardQuickActions";
-import { ApexModuleBreakdown } from "@/components/apex/overview/ApexModuleBreakdown";
+import { ApexBusinessTypeBreakdown } from "@/components/apex/overview/ApexBusinessTypeBreakdown";
 import { ApexMonitoringStats } from "@/components/apex/overview/ApexMonitoringStats";
 import { ApexPortfolioHealth } from "@/components/apex/overview/ApexPortfolioHealth";
 import { ApexInsightsPanel } from "@/components/apex/overview/ApexInsightsPanel";
 import { ApexDonutChart } from "@/components/apex/charts/ApexDonutChart";
-import {
-  ApexTenantGrowthChart,
-  ApexActivityBarChart,
-} from "@/components/apex/charts/ApexAreaBarCharts";
 import { Button } from "@/components/ui/button";
+import { LayoutDashboard } from "lucide-react";
+import {
+  aggregateSubscriptionStatus,
+  buildPortfolioInsights,
+} from "@/lib/apex/analytics";
 
 export default function DashboardHomePage() {
   const { summary, loading, error } = useApexDashboard();
   const [tenants, setTenants] = useState<TenantListItem[]>([]);
-  const [report, setReport] = useState<PlatformReport | null>(null);
   const member = getApexMember();
-  const firstName = (member?.name || member?.username || "there").split(/\s+/)[0];
+  const firstName = (member?.displayName || member?.UserName || "there").split(/\s+/)[0];
 
   useEffect(() => {
     if (!summary) return;
     void fetchTenants()
       .then(setTenants)
       .catch(() => setTenants([]));
-    void fetchPlatformReport()
-      .then(setReport)
-      .catch(() => setReport(null));
   }, [summary]);
 
   if (loading && !summary) {
@@ -60,10 +45,7 @@ export default function DashboardHomePage() {
   if (error && !summary) {
     return (
       <div className="space-y-6">
-        <ApexPageHeader
-          title="Overview"
-          description="Platform snapshot and action queues"
-        />
+        <ApexPageHeader title="Overview" description="Platform snapshot and action queues" />
         <ApexErrorAlert message={error} />
       </div>
     );
@@ -79,17 +61,13 @@ export default function DashboardHomePage() {
     );
   }
 
-  const totalTenants = summary.companies + summary.branches;
   const pendingTotal =
     summary.pendingSetupPayments +
     summary.pendingYearlyPayments +
-    summary.pendingModuleRequests +
     summary.unreadFeedback;
 
   const insights = buildPortfolioInsights(summary, tenants);
   const subscriptionChart = aggregateSubscriptionStatus(tenants);
-  const growthChart = aggregateTenantGrowth(tenants);
-  const topTenantsChart = topTenantsByAnnualFee(report?.rows ?? []);
 
   return (
     <div className="space-y-10">
@@ -98,7 +76,7 @@ export default function DashboardHomePage() {
         description={
           pendingTotal > 0
             ? `${pendingTotal} item${pendingTotal === 1 ? "" : "s"} across your queues need attention today.`
-            : `${totalTenants} tenants on VoloSync — all queues are clear.`
+            : `${summary.totalTenants} wholesalers on VoloSync — all queues are clear.`
         }
         actions={
           <div className="flex flex-wrap gap-2">
@@ -115,9 +93,9 @@ export default function DashboardHomePage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm" className="cursor-pointer">
-              <Link href="/payments/setup">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Setup payments
+              <Link href="/feedback">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Wholesaler chat
               </Link>
             </Button>
           </div>
@@ -129,23 +107,34 @@ export default function DashboardHomePage() {
       {tenants.length > 0 ? (
         <ApexPortfolioHealth summary={summary} tenants={tenants} />
       ) : (
-        <ApexTotalTenantsBanner total={totalTenants} />
+        <ApexTotalTenantsBanner total={summary.totalTenants} />
       )}
 
       {insights.length > 0 ? <ApexInsightsPanel insights={insights} /> : null}
 
       <section className="space-y-5">
         <ApexSectionHeader
-          title="Platform snapshot"
-          description="Companies, branches, renewals, revenue, and inventory in one grid."
+          title="Action queues"
+          description="Click a card to open the matching workflow."
+          action={
+            (summary.pendingSetupPayments > 0 ||
+              summary.pendingYearlyPayments > 0) ? (
+              <Button asChild variant="ghost" size="sm" className="hidden text-muted-foreground sm:inline-flex">
+                <Link href="/payments/setup">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Payments
+                </Link>
+              </Button>
+            ) : undefined
+          }
         />
         <ApexStatGrid summary={summary} />
       </section>
 
       <section className="space-y-5">
         <ApexSectionHeader
-          title="Action queues"
-          description="Setup payments, yearly payments, module requests, and feedback awaiting review."
+          title="Platform monitoring"
+          description="Users, module requests, and wholesaler mix across the portfolio."
         />
         <ApexMonitoringStats summary={summary} />
       </section>
@@ -156,54 +145,12 @@ export default function DashboardHomePage() {
             title="Subscription mix"
             description="Live breakdown across your portfolio"
             data={subscriptionChart}
-            centerValue={totalTenants}
-            centerLabel="Tenants"
+            centerValue={summary.totalTenants}
+            centerLabel="Wholesalers"
           />
         ) : null}
-        <ApexModuleBreakdown tenants={tenants} />
+        <ApexBusinessTypeBreakdown summary={summary} />
       </section>
-
-      <section className="grid gap-6 xl:grid-cols-2">
-        <ApexTenantGrowthChart data={growthChart} />
-        <ApexActivityBarChart
-          title="Top tenants by annual fee"
-          description="Highest-value main tenants from the platform report"
-          data={topTenantsChart}
-          money
-          emptyTitle="No fee data yet"
-          emptyDescription="Annual fees appear here once tenants are billed."
-        />
-      </section>
-
-      {report?.totals ? (
-        <section className="apex-panel-surface apex-alert-card grid gap-4 rounded-xl border border-white/8 p-5 sm:grid-cols-3">
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              Portfolio stock value
-            </p>
-            <p className="mt-1 text-lg font-bold tabular-nums text-foreground">
-              ETB {Number(report.totals.stock_value || 0).toLocaleString("en-ET")}
-            </p>
-          </div>
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              Annual fees (all tenants)
-            </p>
-            <p className="mt-1 text-lg font-bold tabular-nums text-foreground">
-              ETB {Number(report.totals.annual_fee || 0).toLocaleString("en-ET")}
-            </p>
-          </div>
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              Payments on record
-            </p>
-            <p className="mt-1 flex items-center gap-2 text-lg font-bold tabular-nums text-foreground">
-              <CreditCard className="h-4 w-4 text-primary" />
-              {report.totals.payments}
-            </p>
-          </div>
-        </section>
-      ) : null}
     </div>
   );
 }

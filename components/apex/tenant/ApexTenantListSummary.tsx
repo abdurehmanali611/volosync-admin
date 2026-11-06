@@ -1,14 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, AlertTriangle, Clock3, MessageCircle, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, Ban, MessageCircle, PauseCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  computeQuickHealthScore,
-  type DashboardSummary,
-} from "@/lib/admin/dashboard";
+import { computeQuickHealthScore } from "@/lib/apex/analytics";
+import type { DashboardSummary } from "@/lib/apex/actions";
 
-/** Compact portfolio-health pill for the topbar (links to Analytics). */
 export function ApexHeaderHealthPill({ summary }: { summary: DashboardSummary }) {
   const health = computeQuickHealthScore(summary);
 
@@ -27,26 +24,36 @@ export function ApexHeaderHealthPill({ summary }: { summary: DashboardSummary })
   );
 }
 
-/** Summary chips for the tenants list page — active / due soon / expired / unread. */
 export function ApexTenantListSummary({
   tenants,
   total,
 }: {
-  tenants: { subscription_state: string; unread_feedback?: number }[];
+  tenants: { subscriptionStatus: string; accountStatus: string; billingHold: boolean; unreadFeedback: number }[];
   total: number;
 }) {
-  const active = tenants.filter((t) => t.subscription_state === "ACTIVE").length;
-  const dueSoon = tenants.filter((t) => t.subscription_state === "DUE_SOON").length;
-  const expired = tenants.filter((t) => t.subscription_state === "EXPIRED").length;
-  const unpaid = tenants.filter((t) => t.subscription_state === "UNPAID").length;
-  const unread = tenants.filter((t) => (t.unread_feedback ?? 0) > 0).length;
+  const active = tenants.filter((t) => t.subscriptionStatus === "active").length;
+  const atRisk = tenants.filter(
+    (t) =>
+      t.subscriptionStatus === "grace" ||
+      t.subscriptionStatus === "expired" ||
+      t.billingHold,
+  ).length;
+  const restricted = tenants.filter(
+    (t) => t.accountStatus === "suspended" || t.accountStatus === "banned",
+  ).length;
+  const unread = tenants.filter((t) => t.unreadFeedback > 0).length;
 
   const chips = [
     { label: "Active", value: active, icon: Activity, tone: "text-[oklch(0.92_0.04_155)]" },
-    { label: "Due soon", value: dueSoon, icon: Clock3, tone: "text-[oklch(0.92_0.05_75)]" },
-    { label: "Expired", value: expired, icon: XCircle, tone: "text-[oklch(0.92_0.04_25)]" },
-    { label: "Never paid", value: unpaid, icon: AlertTriangle, tone: "text-[oklch(0.92_0.03_265)]" },
-    { label: "Unread feedback", value: unread, icon: MessageCircle, tone: "text-[oklch(0.92_0.04_230)]" },
+    { label: "At risk", value: atRisk, icon: AlertTriangle, tone: "text-[oklch(0.92_0.05_75)]" },
+    { label: "Restricted", value: restricted, icon: Ban, tone: "text-[oklch(0.92_0.04_25)]" },
+    { label: "Unread chat", value: unread, icon: MessageCircle, tone: "text-[oklch(0.92_0.04_195)]" },
+    {
+      label: "Billing hold",
+      value: tenants.filter((t) => t.billingHold).length,
+      icon: PauseCircle,
+      tone: "text-[oklch(0.92_0.03_300)]",
+    },
   ].filter((c) => c.value > 0);
 
   if (chips.length === 0) return null;
