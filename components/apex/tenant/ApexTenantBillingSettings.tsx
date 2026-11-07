@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { format, isValid, startOfDay } from "date-fns";
+import { addDays, format, isValid, startOfDay } from "date-fns";
 import {
   CalendarDays,
   CalendarIcon,
@@ -56,7 +56,7 @@ type Props = {
     billingNotes: string | null;
     isIllustrationTenant: boolean;
     billingHold: boolean;
-    freeTrialEndsAt: string | null;
+    freeTrialEndsAt?: string | null;
   }) => void;
   onApplyCatalog?: () => void;
 };
@@ -82,6 +82,9 @@ export function ApexTenantBillingSettings({
   const setupNum = Number(setupFee) || 0;
   const yearlyNum = Number(yearlyFee) || 0;
 
+  const trialChanged =
+    toDateKey(trialEnd) !== toDateKey(parseTrialDate(tenant.freeTrialEndsAt));
+
   const dirty = useMemo(() => {
     return (
       setupNum !== tenant.setupFeeETB ||
@@ -89,7 +92,7 @@ export function ApexTenantBillingSettings({
       notes.trim() !== (tenant.billingNotes ?? "").trim() ||
       illustration !== tenant.isIllustrationTenant ||
       hold !== tenant.billingHold ||
-      toDateKey(trialEnd) !== toDateKey(parseTrialDate(tenant.freeTrialEndsAt))
+      trialChanged
     );
   }, [
     setupNum,
@@ -97,7 +100,7 @@ export function ApexTenantBillingSettings({
     notes,
     illustration,
     hold,
-    trialEnd,
+    trialChanged,
     tenant,
   ]);
 
@@ -240,7 +243,10 @@ export function ApexTenantBillingSettings({
                         setTrialEnd(date ? startOfDay(date) : undefined);
                         setTrialOpen(false);
                       }}
-                      disabled={{ before: startOfDay(new Date()) }}
+                      disabled={{
+                        before: addDays(startOfDay(new Date()), 1),
+                        after: addDays(startOfDay(new Date()), 90),
+                      }}
                     />
                     <div className="flex items-center justify-between gap-2 border-t border-border/60 px-3 py-2">
                       <Button
@@ -282,7 +288,8 @@ export function ApexTenantBillingSettings({
                 ) : null}
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Optional. Leave empty if this wholesaler is not on a free trial.
+                Optional. A trial ends 1 to 90 days from today — leave empty if
+                this wholesaler is not on a free trial.
                 {trialEnd
                   ? ` Ends ${format(trialEnd, "EEEE, MMM d, yyyy")}.`
                   : ""}
@@ -395,9 +402,11 @@ export function ApexTenantBillingSettings({
                 billingNotes: notes.trim() || null,
                 isIllustrationTenant: illustration,
                 billingHold: hold,
-                freeTrialEndsAt: trialEnd
-                  ? startOfDay(trialEnd).toISOString()
-                  : null,
+                freeTrialEndsAt: trialChanged
+                  ? trialEnd
+                    ? startOfDay(trialEnd).toISOString()
+                    : null
+                  : undefined,
               })
             }
           >

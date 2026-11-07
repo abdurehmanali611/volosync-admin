@@ -1481,6 +1481,19 @@ export async function fetchMonthlySignups(): Promise<MonthlySignupRow[]> {
 /* Billing, modules, pricing                                          */
 /* ------------------------------------------------------------------ */
 
+/** The billing endpoint counts days from today; the console picks a calendar date. */
+function trialDaysFromToday(value: string): number {
+  const end = new Date(value);
+  const today = new Date();
+  end.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((end.getTime() - today.getTime()) / 86400000);
+  if (days < 1 || days > 90) {
+    throw new Error("A free trial ends 1 to 90 days from today.");
+  }
+  return days;
+}
+
 export async function updateTenantBilling(tinNumber: string, input: TenantBillingInput) {
   const id = await resolveTenantId(tinNumber);
   const patch: Json = {};
@@ -1490,7 +1503,11 @@ export async function updateTenantBilling(tinNumber: string, input: TenantBillin
     if (input.billingHold) patch.billing_hold_note = input.billingHoldNote ?? input.billingNotes ?? "";
   }
   if (input.yearlyFeeETB !== undefined) patch.annual_fee = input.yearlyFeeETB;
-  if (input.freeTrialEndsAt !== undefined) patch.free_trial_ends_on = input.freeTrialEndsAt;
+  if (input.freeTrialEndsAt !== undefined) {
+    patch.free_trial_days = input.freeTrialEndsAt
+      ? trialDaysFromToday(input.freeTrialEndsAt)
+      : null;
+  }
   if (Object.keys(patch).length) {
     await apexPatch(`/api/tenants/${id}/billing`, patch);
   }
