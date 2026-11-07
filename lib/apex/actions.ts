@@ -1503,6 +1503,7 @@ export async function updateTenantBilling(tinNumber: string, input: TenantBillin
     if (input.billingHold) patch.billing_hold_note = input.billingHoldNote ?? input.billingNotes ?? "";
   }
   if (input.yearlyFeeETB !== undefined) patch.annual_fee = input.yearlyFeeETB;
+  if (input.setupFeeETB !== undefined) patch.setup_fee = input.setupFeeETB;
   if (input.freeTrialEndsAt !== undefined) {
     patch.free_trial_days = input.freeTrialEndsAt
       ? trialDaysFromToday(input.freeTrialEndsAt)
