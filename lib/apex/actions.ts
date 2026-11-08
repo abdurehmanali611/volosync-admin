@@ -774,7 +774,6 @@ function mapTenantDetail(
   row: Json,
   staff: Json[],
   payments: TenantPaymentRow[],
-  plan: Json | null,
 ): TenantDetail {
   const counts = (row.counts ?? {}) as Json;
   const chat = (row.chat ?? {}) as Json;
@@ -793,9 +792,9 @@ function mapTenantDetail(
     billingState: lower(row.billing_state),
     modules: moduleCodesEnabled(row),
     moduleLines: lines,
-    setupFeeETB: n(row.setup_fee ?? row.suggested_setup_fee ?? plan?.setup_fee),
+    setupFeeETB: n(row.setup_fee),
     yearlyFeeETB: current,
-    suggestedSetupFeeETB: n(row.suggested_setup_fee ?? plan?.setup_fee),
+    suggestedSetupFeeETB: n(row.suggested_setup_fee),
     suggestedYearlyFeeETB: suggested,
     feesManuallySet: bool(row.fees_manually_set),
     feesMatchCatalog:
@@ -1063,30 +1062,13 @@ export async function fetchTenantDetail(tinNumber: string): Promise<TenantDetail
   const key = `apex:tenant:${tinNumber}`;
   return dedupeApexRead(key, async () => {
     const id = await resolveTenantId(tinNumber);
-    const [row, staff, payments, plan] = await Promise.all([
+    const [row, staff, payments] = await Promise.all([
       apexGet<Json>(`/api/tenants/${id}`),
       apexGet<Json[]>(`/api/tenants/${id}/staff`).catch(() => [] as Json[]),
       fetchTenantPaymentHistory(id),
-      fetchPricingPlan(),
     ]);
-    return mapTenantDetail(row, Array.isArray(staff) ? staff : [], payments, plan);
+    return mapTenantDetail(row, Array.isArray(staff) ? staff : [], payments);
   });
-}
-
-/** The default active pricing plan — the source of every suggested fee. */
-async function fetchPricingPlan(): Promise<Json | null> {
-  const rules = await fetchPricingRules();
-  const plan = rules.find((rule) => rule.isDefault && rule.isActive) ?? rules[0] ?? null;
-  return plan
-    ? {
-        id: plan.id,
-        setup_fee: plan.setupFeeETB,
-        yearly_base_fee: plan.yearlyFeeETB,
-        inventory_yearly_fee: plan.inventoryYearlyFeeETB,
-        hr_yearly_fee: plan.hrYearlyFeeETB,
-        sales_role_yearly_fee: plan.salesRoleYearlyFeeETB,
-      }
-    : null;
 }
 
 export async function fetchPendingPayments(kind?: string): Promise<PaymentRow[]> {

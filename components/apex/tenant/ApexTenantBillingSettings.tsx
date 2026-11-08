@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { addDays, format, isValid, startOfDay } from "date-fns";
 import {
+  AlertTriangle,
   CalendarDays,
   CalendarIcon,
   CircleDollarSign,
@@ -82,6 +84,15 @@ export function ApexTenantBillingSettings({
   const setupNum = Number(setupFee) || 0;
   const yearlyNum = Number(yearlyFee) || 0;
 
+  // A missing fee is shown as 0.00, never replaced with the other fee. The
+  // warning below tells the operator to set it here or in the catalog.
+  const missingSetup = tenant.setupFeeETB <= 0;
+  const missingYearly = tenant.yearlyFeeETB <= 0;
+  const missingFees = missingSetup || missingYearly;
+  const canApplyMissing =
+    (missingSetup && tenant.suggestedSetupFeeETB > 0) ||
+    (missingYearly && tenant.suggestedYearlyFeeETB > 0);
+
   const trialChanged =
     toDateKey(trialEnd) !== toDateKey(parseTrialDate(tenant.freeTrialEndsAt));
 
@@ -104,7 +115,9 @@ export function ApexTenantBillingSettings({
     tenant,
   ]);
 
-  const feeBadge = tenant.feesManuallySet ? (
+  const feeBadge = missingFees ? (
+    <Badge variant="warning">Fees missing</Badge>
+  ) : tenant.feesManuallySet ? (
     <Badge variant="warning">Custom fees</Badge>
   ) : tenant.feesMatchCatalog ? (
     <Badge variant="success">Matches catalog</Badge>
@@ -127,16 +140,66 @@ export function ApexTenantBillingSettings({
           <ApexTenantMetricTile
             label="Catalog setup"
             value={formatEtb(tenant.suggestedSetupFeeETB)}
-            sub="Suggested from pricing rules"
+            sub={
+              tenant.suggestedSetupFeeETB > 0
+                ? "Suggested from pricing rules"
+                : "No matching catalog setup fee"
+            }
           />
           <ApexTenantMetricTile
             label="Catalog yearly"
             value={formatEtb(tenant.suggestedYearlyFeeETB)}
-            sub="Suggested from pricing rules"
+            sub={
+              tenant.suggestedYearlyFeeETB > 0
+                ? "Suggested from pricing rules"
+                : "No matching catalog yearly fee"
+            }
           />
         </div>
 
-        {!tenant.feesMatchCatalog && onApplyCatalog ? (
+        {missingFees ? (
+          <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-[oklch(0.78_0.09_75/0.32)] bg-[oklch(0.55_0.06_75/0.1)] px-4 py-3">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[oklch(0.84_0.09_75)]" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  {missingSetup && missingYearly
+                    ? "Setup and yearly fees are not set"
+                    : missingSetup
+                      ? "Setup fee is not set"
+                      : "Yearly fee is not set"}
+                </p>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  The tenant portal shows 0.00 ETB for a missing fee. Enter the
+                  amount below
+                  {canApplyMissing
+                    ? ", or apply the catalog price for this module mix"
+                    : ""}
+                  . You can also save a matching plan in the{" "}
+                  <Link
+                    href="/pricing"
+                    className="font-medium text-[oklch(0.82_0.06_85)] underline underline-offset-2 transition-colors hover:text-[oklch(0.9_0.07_85)]"
+                  >
+                    Pricing catalog
+                  </Link>
+                  .
+                </p>
+              </div>
+            </div>
+            {canApplyMissing && onApplyCatalog ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="apex-row-action"
+                disabled={busy}
+                onClick={onApplyCatalog}
+              >
+                Apply catalog pricing
+              </Button>
+            ) : null}
+          </div>
+        ) : !tenant.feesMatchCatalog && onApplyCatalog ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[oklch(0.72_0.08_85/0.25)] bg-[oklch(0.55_0.04_85/0.08)] px-4 py-3">
             <div className="flex items-start gap-2.5">
               <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[oklch(0.82_0.06_85)]" />
@@ -175,8 +238,17 @@ export function ApexTenantBillingSettings({
                 onChange={(e) => setSetupFee(e.target.value)}
                 className="h-11 tabular-nums"
               />
-              <p className="text-[11px] text-muted-foreground">
-                One-time onboarding charge
+              <p
+                className={cn(
+                  "text-[11px]",
+                  missingSetup
+                    ? "text-[oklch(0.84_0.09_75)]"
+                    : "text-muted-foreground",
+                )}
+              >
+                {missingSetup
+                  ? "Not set — the tenant portal shows 0.00 ETB until you save an amount or apply catalog pricing."
+                  : "One-time onboarding charge"}
               </p>
             </div>
             <div className="space-y-2">
@@ -190,8 +262,17 @@ export function ApexTenantBillingSettings({
                 onChange={(e) => setYearlyFee(e.target.value)}
                 className="h-11 tabular-nums"
               />
-              <p className="text-[11px] text-muted-foreground">
-                Yearly renewal ≈ {formatEtb(yearlyPreview)}
+              <p
+                className={cn(
+                  "text-[11px]",
+                  missingYearly
+                    ? "text-[oklch(0.84_0.09_75)]"
+                    : "text-muted-foreground",
+                )}
+              >
+                {missingYearly
+                  ? "Not set — the tenant portal shows 0.00 ETB until you save an amount or apply catalog pricing."
+                  : `Yearly renewal ≈ ${formatEtb(yearlyPreview)}`}
               </p>
             </div>
           </div>

@@ -166,7 +166,7 @@ export default function TenantDetailPage() {
 
         {tab === "billing" ? (
           <ApexTenantBillingSettings
-            key={`billing-${tenant.tinNumber}-${tenant.yearlyFeeETB}-${tenant.feesManuallySet}`}
+            key={`billing-${tenant.tinNumber}-${tenant.setupFeeETB}-${tenant.yearlyFeeETB}-${tenant.feesManuallySet}`}
             tenant={tenant}
             busy={busy}
             onApplyCatalog={() => run(() => applySuggestedTenantFees(tin))}
