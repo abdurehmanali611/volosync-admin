@@ -491,7 +491,7 @@ export function ApexPricingRulesTable({ rules, onChanged }: Props) {
             <p className="tabular-nums text-sm font-semibold">
               {formatETB(row.original.yearlyFeeETB)}
             </p>
-            <p className="text-[11px] text-muted-foreground">Recurring every 3 months</p>
+            <p className="text-[11px] text-muted-foreground">Recurring every 12 months</p>
           </div>
         ),
       },

@@ -793,12 +793,14 @@ function mapTenantDetail(
     billingState: lower(row.billing_state),
     modules: moduleCodesEnabled(row),
     moduleLines: lines,
-    setupFeeETB: n(row.setup_fee ?? plan?.setup_fee),
+    setupFeeETB: n(row.setup_fee ?? row.suggested_setup_fee ?? plan?.setup_fee),
     yearlyFeeETB: current,
-    suggestedSetupFeeETB: n(plan?.setup_fee),
+    suggestedSetupFeeETB: n(row.suggested_setup_fee ?? plan?.setup_fee),
     suggestedYearlyFeeETB: suggested,
     feesManuallySet: bool(row.fees_manually_set),
-    feesMatchCatalog: !bool(row.fees_manually_set) || current === suggested,
+    feesMatchCatalog:
+      (!bool(row.fees_manually_set) || current === suggested) &&
+      n(row.setup_fee) === n(row.suggested_setup_fee),
     setupFeeApproved: bool(row.setup_approved),
     subscriptionPaymentApproved: upper(row.subscription_state) !== "UNPAID",
     subscriptionPaidUntil: row.subscription_expires_on ? str(row.subscription_expires_on) : null,
