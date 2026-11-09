@@ -10,7 +10,15 @@ import {
 } from "@/components/apex/StatusBadge";
 import { cn } from "@/lib/utils";
 
-export function ApexTenantSummaryStrip({ tenant }: { tenant: TenantDetail }) {
+export function ApexTenantSummaryStrip({
+  tenant,
+  /** Satellite branches show the main branch's logo. */
+  logoUrlOverride,
+}: {
+  tenant: TenantDetail;
+  logoUrlOverride?: string | null;
+}) {
+  const logoUrl = logoUrlOverride === undefined ? tenant.logoUrl : logoUrlOverride;
   const items = [
     {
       label: "Setup fee",
@@ -66,10 +74,10 @@ export function ApexTenantSummaryStrip({ tenant }: { tenant: TenantDetail }) {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-[inset_0_1px_0_oklch(1_0_0/0.08)]">
-              {tenant.logoUrl ? (
+              {logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={tenant.logoUrl}
+                  src={logoUrl}
                   alt=""
                   className="h-full w-full object-cover"
                 />

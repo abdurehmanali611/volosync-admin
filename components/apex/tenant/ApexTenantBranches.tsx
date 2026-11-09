@@ -216,9 +216,9 @@ export function ApexTenantBranches({
               Create branch
             </Button>
           </DialogTrigger>
-          <DialogContent className="gap-0 overflow-hidden border-border/60 p-0 sm:max-w-xl">
-            <div className="h-1 w-full bg-linear-to-r from-[var(--apex-teal)] via-[var(--apex-gold)] to-[var(--apex-teal)]" />
-            <DialogHeader className="border-b border-border/50 px-6 py-5 text-left">
+          <DialogContent className="flex max-h-[calc(100svh-2rem)] flex-col gap-0 overflow-hidden border-border/60 p-0 sm:max-w-xl">
+            <div className="h-1 w-full shrink-0 bg-linear-to-r from-[var(--apex-teal)] via-[var(--apex-gold)] to-[var(--apex-teal)]" />
+            <DialogHeader className="shrink-0 border-b border-border/50 px-6 py-5 text-left">
               <DialogTitle className="text-lg tracking-tight">
                 Create branch
               </DialogTitle>
@@ -228,7 +228,7 @@ export function ApexTenantBranches({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-6 px-6 py-5">
+            <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
               <section className="space-y-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Location
@@ -383,7 +383,7 @@ export function ApexTenantBranches({
               </section>
             </div>
 
-            <DialogFooter className="mx-0 mb-0 rounded-none border-t border-border/50 bg-black/20 px-6 py-4">
+            <DialogFooter className="mx-0 mb-0 shrink-0 rounded-none border-t border-border/50 bg-black/20 px-6 py-4">
               <Button variant="outline" className="h-9 rounded-xl px-4 font-semibold" onClick={() => setOpen(false)}>
                 Cancel
               </Button>

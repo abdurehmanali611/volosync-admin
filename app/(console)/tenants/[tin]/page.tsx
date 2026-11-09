@@ -99,6 +99,11 @@ export default function TenantDetailPage() {
     return <ApexPageLoader label="Loading tenant…" />;
   }
 
+  // A satellite branch displays — and cannot change — the main branch's logo.
+  const mainFamilyLogo = tenant.isBranch
+    ? (tenant.family.find((member) => member.isMain)?.logoUrl ?? null)
+    : undefined;
+
   return (
     <div className="space-y-6">
       <ApexPageHeader
@@ -125,11 +130,12 @@ export default function TenantDetailPage() {
         currentTin={tenant.tinNumber}
       />
 
-      <ApexTenantSummaryStrip tenant={tenant} />
+      <ApexTenantSummaryStrip tenant={tenant} logoUrlOverride={mainFamilyLogo} />
 
       <ApexTenantLogoEditor
         key={`logo-${tenant.tinNumber}-${tenant.logoUrl || ""}`}
         tenant={tenant}
+        inheritedLogoUrl={mainFamilyLogo}
         busy={busy}
         onSaved={() => reload()}
       />

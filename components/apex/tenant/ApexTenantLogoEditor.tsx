@@ -15,17 +15,24 @@ export function ApexTenantLogoEditor({
   tenant,
   busy,
   onSaved,
+  /** When set, the tab is read-only and always displays this logo — used by
+   * satellite branches, whose logo is the main branch's and cannot change. */
+  inheritedLogoUrl,
 }: {
   tenant: TenantDetail;
   busy?: boolean;
   onSaved: () => void | Promise<void>;
+  inheritedLogoUrl?: string | null;
 }) {
   const [draftUrl, setDraftUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const current = (tenant.logoUrl || "").trim();
+  const locked = inheritedLogoUrl !== undefined;
+  const current = locked
+    ? (inheritedLogoUrl || "").trim()
+    : (tenant.logoUrl || "").trim();
   const preview = (draftUrl || current || "").trim() || null;
-  const dirty = Boolean(draftUrl && draftUrl.trim() !== current);
+  const dirty = !locked && Boolean(draftUrl && draftUrl.trim() !== current);
 
   const save = async () => {
     const url = (draftUrl || "").trim();
@@ -49,11 +56,15 @@ export function ApexTenantLogoEditor({
   return (
     <ApexTenantTabShell
       title="Wholesaler logo"
-      description="Replace the logo shown across VoloSync for this wholesaler. Name, TIN, and business type stay unchanged."
+      description={
+        locked
+          ? "Satellite branches use the main branch's logo. It cannot be removed or changed here."
+          : "Replace the logo shown across VoloSync for this wholesaler. Name, TIN, and business type stay unchanged."
+      }
       icon={ImageIcon}
       tone="gold"
       actions={
-        dirty ? (
+        locked ? null : dirty ? (
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
@@ -91,21 +102,30 @@ export function ApexTenantLogoEditor({
           )}
         </div>
         <div className="min-w-0 flex-1 space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Upload a square PNG or JPEG. Changes apply after you save — wholesaler
-            name, business type, and TIN are not edited here.
-          </p>
-          <CloudinaryImageUploadButton
-            previewUrl={preview}
-            onSuccess={(result) => {
-              setDraftUrl(result.info.secure_url);
-            }}
-          />
-          {dirty ? (
-            <p className="text-xs text-[oklch(0.85_0.06_85)]">
-              New logo ready — click Save logo to publish.
+          {locked ? (
+            <p className="text-sm text-muted-foreground">
+              This is the main branch&apos;s logo. To change it, open the Main
+              tab and edit the logo there.
             </p>
-          ) : null}
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Upload a square PNG or JPEG. Changes apply after you save —
+                wholesaler name, business type, and TIN are not edited here.
+              </p>
+              <CloudinaryImageUploadButton
+                previewUrl={preview}
+                onSuccess={(result) => {
+                  setDraftUrl(result.info.secure_url);
+                }}
+              />
+              {dirty ? (
+                <p className="text-xs text-[oklch(0.85_0.06_85)]">
+                  New logo ready — click Save logo to publish.
+                </p>
+              ) : null}
+            </>
+          )}
         </div>
       </div>
     </ApexTenantTabShell>

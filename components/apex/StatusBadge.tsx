@@ -56,15 +56,18 @@ export function SubscriptionStatusBadge({ status }: { status: string }) {
 }
 
 export function AccountStatusBadge({ status }: { status: string }) {
+  // The value may arrive uppercase from some endpoints — normalize before the
+  // lookup so an unmatched key never renders as a blank muted pill.
+  const key = String(status ?? "").trim().toLowerCase();
   return (
     <Badge
       variant="outline"
       className={cn(
         "border-transparent font-medium",
-        accountStyles[status] ?? "bg-muted text-muted-foreground",
+        accountStyles[key] ?? "bg-muted text-muted-foreground",
       )}
     >
-      {ACCOUNT_LABELS[status] ?? status}
+      {ACCOUNT_LABELS[key] ?? status}
     </Badge>
   );
 }

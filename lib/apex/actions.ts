@@ -224,6 +224,7 @@ export type TenantFamilyMember = {
   name: string;
   isMain: boolean;
   isRoot: boolean;
+  logoUrl: string | null;
 };
 
 export type TenantDetail = {
@@ -796,6 +797,7 @@ function mapTenantDetail(
       name: str(member.name),
       isMain: bool(member.is_main),
       isRoot: bool(member.is_root),
+      logoUrl: member.logo_url ? str(member.logo_url) : null,
     })),
     logoUrl: row.logo_url ? str(row.logo_url) : null,
     accountStatus: status(row.account_status),
