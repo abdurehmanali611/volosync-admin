@@ -7,7 +7,6 @@ import {
   GitBranch,
   LayoutDashboard,
   MessageCircle,
-  Puzzle,
   Tags,
   UserPlus,
   Users,
@@ -20,7 +19,6 @@ export type ApexNavBadgeKey =
   | "setupPendingTenants"
   | "inactiveTenants"
   | "unreadFeedback"
-  | "pendingModuleRequests"
   | "disabledUsers";
 
 export type ApexNavItem = {
@@ -70,14 +68,6 @@ export const APEX_MONITORING_NAV: ApexNavItem[] = [
     href: "/sales-agents",
     label: "Sales Agents",
     icon: Handshake,
-  },
-  {
-    id: "modules",
-    href: "/modules",
-    label: "Module requests",
-    icon: Puzzle,
-    matchPrefix: true,
-    badgeKey: "pendingModuleRequests",
   },
   {
     id: "audit",

@@ -94,12 +94,6 @@ export function getApexPageMeta(
       description: "Register the field team who close wholesale deals",
     };
   }
-  if (pathname === "/modules") {
-    return {
-      title: "Module requests",
-      description: "Pending module enable/disable requests from wholesalers",
-    };
-  }
   if (pathname.startsWith("/feedback/")) {
     return {
       title: "Conversation",

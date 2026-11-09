@@ -6,7 +6,6 @@ import { BarChart3, Download, RefreshCw } from "lucide-react";
 import {
   fetchAuditLogs,
   fetchFeedbackThreads,
-  fetchModuleChangeRequests,
   fetchTenants,
   type TenantListItem,
 } from "@/lib/apex/actions";
@@ -28,7 +27,6 @@ import {
   aggregateAccountStatus,
   aggregateAuditActivity,
   aggregateFeedbackActivity,
-  aggregateModuleRequests,
   aggregateSubscriptionStatus,
   aggregateTenantGrowth,
   buildIssueCategories,
@@ -51,17 +49,15 @@ function ReportsContent() {
   const [error, setError] = useState<string | null>(null);
   const [auditActivity, setAuditActivity] = useState<{ label: string; value: number; color: string }[]>([]);
   const [feedbackStats, setFeedbackStats] = useState({ open: 0, closed: 0, unread: 0 });
-  const [moduleSlices, setModuleSlices] = useState<{ label: string; value: number; color: string }[]>([]);
   const coordinator = useLoadCoordinator();
 
   const loadData = async (isStale?: () => boolean) => {
     setError(null);
     try {
-      const [tenantList, logs, threads, modules] = await Promise.all([
+      const [tenantList, logs, threads] = await Promise.all([
         fetchTenants(),
         fetchAuditLogs(150),
         fetchFeedbackThreads(200),
-        fetchModuleChangeRequests(),
       ]);
       if (isStale?.()) return;
       setTenants(tenantList);
@@ -73,13 +69,6 @@ function ReportsContent() {
         })),
       );
       setFeedbackStats(aggregateFeedbackActivity(threads));
-      setModuleSlices(
-        aggregateModuleRequests(modules).map((d) => ({
-          label: d.label,
-          value: d.value,
-          color: d.color,
-        })),
-      );
     } catch (e) {
       const msg = mapApexApiError(e, "Failed to load analytics");
       if (!isStale?.() && msg) setError(msg);
@@ -206,14 +195,7 @@ function ReportsContent() {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-2">
-        <ApexActivityBarChart
-          title="Module change requests"
-          description="Pending, approved, and rejected module requests"
-          data={moduleSlices}
-        />
-        <ApexIssuesPanel issues={issues} />
-      </section>
+      <ApexIssuesPanel issues={issues} />
 
       <section className="grid gap-6 xl:grid-cols-2">
         <ApexBusinessTypeBreakdown summary={summary} />

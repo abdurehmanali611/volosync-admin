@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ArrowUpRight, Puzzle, UserCheck, UserX, Users } from "lucide-react";
+import { ArrowUpRight, UserCheck, UserX, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DashboardSummary } from "@/lib/apex/actions";
 
-type MonitoringStatKey = "totalUsers" | "disabledUsers" | "pendingModuleRequests";
+type MonitoringStatKey = "totalUsers" | "disabledUsers";
 
 const MONITORING_STATS: {
   key: MonitoringStatKey;
@@ -37,22 +37,11 @@ const MONITORING_STATS: {
       "bg-[oklch(0.32_0.06_25)] text-[oklch(0.92_0.04_25)] ring-1 ring-[oklch(0.65_0.14_25/0.4)] shadow-[0_0_16px_-4px_oklch(0.65_0.14_25/0.35)]",
     attention: true,
   },
-  {
-    key: "pendingModuleRequests",
-    title: "Module requests",
-    href: "/modules",
-    icon: Puzzle,
-    accent: "apex-stat-accent-violet",
-    topBar: "apex-stat-topbar-violet",
-    iconClass:
-      "bg-[oklch(0.3_0.05_300)] text-[oklch(0.92_0.04_300)] ring-1 ring-[oklch(0.62_0.1_300/0.38)] shadow-[0_0_16px_-4px_oklch(0.62_0.1_300/0.32)]",
-    attention: true,
-  },
 ];
 
 export function ApexMonitoringStats({ summary }: { summary: DashboardSummary }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2">
       {MONITORING_STATS.map((stat) => {
         const value = summary[stat.key];
         const Icon = stat.icon;

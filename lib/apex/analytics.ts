@@ -2,7 +2,6 @@ import type {
   AuditLogRow,
   DashboardSummary,
   FeedbackThreadRow,
-  ModuleChangeRequestRow,
   TenantListItem,
 } from "./actions";
 
@@ -232,14 +231,6 @@ export function buildIssueCategories(
       description: "Tenants waiting for a reply in wholesaler chat",
     },
     {
-      key: "modules",
-      label: "Module change requests",
-      count: summary.pendingModuleRequests,
-      severity: issueSeverity(summary.pendingModuleRequests > 0, "warning"),
-      href: "/modules",
-      description: "Pending module additions or changes",
-    },
-    {
       key: "users",
       label: "Disabled logins",
       count: summary.disabledUsers,
@@ -313,8 +304,7 @@ function finalizeHealthScore(summary: DashboardSummary, healthyRatio: number) {
     summary.suspendedTenants * 3 +
     summary.bannedTenants * 5 +
     summary.graceOrExpiredTenants * 2 +
-    summary.billingHoldTenants * 2 +
-    summary.pendingModuleRequests;
+    summary.billingHoldTenants * 2;
 
   const issuePenalty = Math.min(40, issueWeight * 1.8);
   const raw = Math.round(healthyRatio * 60 + 40 - issuePenalty);
@@ -439,16 +429,6 @@ export function aggregateFeedbackActivity(threads: FeedbackThreadRow[]): {
   return { open, closed, unread };
 }
 
-export function aggregateModuleRequests(requests: ModuleChangeRequestRow[]): ChartSlice[] {
-  const pending = requests.filter((r) => r.status === "pending").length;
-  const approved = requests.filter((r) => r.status === "approved").length;
-  const rejected = requests.filter((r) => r.status === "rejected").length;
-  return [
-    { key: "pending", label: "Pending", value: pending, color: CHART_COLORS.amber },
-    { key: "approved", label: "Approved", value: approved, color: CHART_COLORS.emerald },
-    { key: "rejected", label: "Rejected", value: rejected, color: CHART_COLORS.danger },
-  ].filter((s) => s.value > 0);
-}
 
 export function formatETB(amount: number): string {
   return `${amount.toLocaleString("en-ET", {

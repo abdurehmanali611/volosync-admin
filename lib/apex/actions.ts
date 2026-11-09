@@ -7,7 +7,6 @@ import {
 } from "./listCache";
 import { persistApexSession, type ApexMember } from "./auth";
 import { APEX_SUBSCRIPTION_MODULES } from "@/constants/subscriptionModules";
-import { normalizeModuleList } from "./moduleChangeRequest";
 
 /* ------------------------------------------------------------------ */
 /* Vocabulary — Django REST codes → the console's lowercase statuses    */
@@ -91,7 +90,6 @@ export type DashboardSummary = {
   totalTenants: number;
   totalUsers: number;
   disabledUsers: number;
-  pendingModuleRequests: number;
   tenantsByBusinessType: { businessType: string; label: string; count: number }[];
 };
 
@@ -283,7 +281,6 @@ export type TenantDetail = {
     stockValueETB: number;
     paymentsCount: number;
     setupPaymentsCount: number;
-    moduleRequestsCount: number;
     pendingPurchaseRequests?: number;
     pendingStockOutRequests?: number;
     pendingItemRegistrations?: number;
@@ -343,21 +340,6 @@ export type AuditLogRow = {
   detail?: string;
 };
 
-export type ModuleChangeRequestRow = {
-  id: number;
-  tenantId: number;
-  tinNumber: string;
-  hotelDisplayName: string;
-  status: string;
-  requestedBySide: string;
-  requestNote: string | null;
-  requestedModules: string[];
-  currentModules: string[];
-  annualFeeETB: number;
-  projectedAnnualFeeETB: number | null;
-  reviewNote?: string | null;
-  createdAt: string;
-};
 
 export type FeedbackThreadRow = {
   id: number;
@@ -547,7 +529,6 @@ function afterBillingMutation() {
 
 function afterModuleMutation() {
   invalidateApexCaches("apex:summary");
-  invalidateApexCaches("apex:modules");
   invalidateApexCaches("apex:tenants");
   invalidateTenantDetailCaches();
 }
@@ -862,7 +843,6 @@ function mapTenantDetail(
       stockValueETB: n(row.stock_value),
       paymentsCount: n(counts.payments),
       setupPaymentsCount: n(counts.setup_payments),
-      moduleRequestsCount: n(counts.module_requests),
     },
     chat: {
       threadId: chat.thread == null ? null : n(chat.thread),
@@ -913,25 +893,6 @@ function mapSignupRow(row: Json): SignupPipelineRow & { status: SignupReviewStat
         : null,
     status: reviewStatus(row.setup_status),
     salesAgentName: str(row.sales_agent) || null,
-  };
-}
-
-function mapModuleRequestRow(row: Json): ModuleChangeRequestRow {
-  return {
-    id: n(row.id),
-    tenantId: n(row.tenant_id ?? row.tenant),
-    tinNumber: str(row.tin),
-    hotelDisplayName: str(row.tenant),
-    status: reviewStatus(row.status),
-    requestedBySide: "tenant",
-    requestNote: str(row.note) || null,
-    requestedModules: normalizeModuleList(str(row.requested_modules)),
-    currentModules: normalizeModuleList(str(row.current_modules)),
-    annualFeeETB: n(row.annual_fee),
-    projectedAnnualFeeETB:
-      row.projected_annual_fee == null ? null : n(row.projected_annual_fee),
-    reviewNote: str(row.review_note) || null,
-    createdAt: str(row.created_at),
   };
 }
 
@@ -1065,7 +1026,6 @@ export async function fetchDashboardSummary(): Promise<DashboardSummary> {
       totalTenants: companies + branches,
       totalUsers: n(row.staff),
       disabledUsers: n(row.logins_disabled),
-      pendingModuleRequests: n(row.pending_module_requests),
       tenantsByBusinessType: [
         { businessType: "Company", label: "Companies", count: companies },
         { businessType: "Branch", label: "Branches", count: branches },
@@ -1447,17 +1407,6 @@ export async function fetchAuditLogs(limit = 100): Promise<AuditLogRow[]> {
   });
 }
 
-export async function fetchModuleChangeRequests(statusFilter?: string): Promise<ModuleChangeRequestRow[]> {
-  const key = `apex:modules:${statusFilter || "all"}`;
-  return dedupeApexRead(key, async () => {
-    const page = await apexList<Json>("/api/tenants/module-requests", {
-      status: statusFilter ? upper(statusFilter) : undefined,
-      limit: 500,
-    });
-    return page.rows.map(mapModuleRequestRow);
-  });
-}
-
 export async function fetchSignupPipeline(limit = 50): Promise<SignupPipelineRow[]> {
   const key = `apex:signups:${limit}`;
   return dedupeApexRead(key, async () => {
@@ -1607,30 +1556,6 @@ export async function setPricingRuleActive(id: number, isActive: boolean) {
 export async function deletePricingRule(id: number) {
   await apexDelete(`/api/pricing/${id}`);
   afterPricingMutation();
-}
-
-export async function approveModuleChangeRequest(
-  requestId: number,
-  reviewNote?: string,
-  options: { applyFee?: boolean; disableModules?: string[] } = {},
-) {
-  await apexPatch("/api/tenants/module-requests", {
-    id: requestId,
-    status: "APPROVED",
-    review_note: reviewNote || "",
-    apply_fee: options.applyFee ?? false,
-    disable_modules: (options.disableModules ?? []).join(","),
-  });
-  afterModuleMutation();
-}
-
-export async function rejectModuleChangeRequest(requestId: number, reviewNote?: string) {
-  await apexPatch("/api/tenants/module-requests", {
-    id: requestId,
-    status: "REJECTED",
-    review_note: reviewNote || "",
-  });
-  afterModuleMutation();
 }
 
 export async function fetchSignupPricingPreview(
