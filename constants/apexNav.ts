@@ -4,6 +4,7 @@ import {
   Building2,
   CreditCard,
   FileText,
+  GitBranch,
   LayoutDashboard,
   MessageCircle,
   Puzzle,
@@ -101,6 +102,13 @@ export const APEX_ACTION_NAV: ApexNavItem[] = [
     label: "Yearly payments",
     icon: CreditCard,
     badgeKey: "pendingYearlyPayments",
+  },
+  {
+    id: "branch-requests",
+    href: "/branch-requests",
+    label: "Branch requests",
+    icon: GitBranch,
+    matchPrefix: true,
   },
   {
     id: "signups",

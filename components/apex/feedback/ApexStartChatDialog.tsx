@@ -34,7 +34,7 @@ export function ApexStartChatDialog({ defaultTin, onDone, trigger }: Props) {
   const [tin, setTin] = useState(defaultTin ?? "");
   const [message, setMessage] = useState("");
   const [options, setOptions] = useState<
-    { tinNumber: string; hotelDisplayName: string }[]
+    { tinNumber: string; hotelDisplayName: string; isBranch?: boolean; isMain?: boolean; parentTin?: string | null }[]
   >([]);
 
   useEffect(() => {
@@ -52,6 +52,9 @@ export function ApexStartChatDialog({ defaultTin, onDone, trigger }: Props) {
             .map((t) => ({
               tinNumber: t.tinNumber,
               hotelDisplayName: t.hotelDisplayName,
+              isBranch: t.isBranch,
+              isMain: t.isMain,
+              parentTin: t.parentTin ?? null,
             }))
             .sort((a, b) =>
               a.hotelDisplayName.localeCompare(b.hotelDisplayName),

@@ -124,10 +124,12 @@ function TenantsContent() {
       setLoading(true);
       setError(null);
       try {
-        const list = await fetchTenants(
-          debouncedSearch || undefined,
-          typeFilter !== "all" ? typeFilter : undefined,
-        );
+        const list = (
+          await fetchTenants(
+            debouncedSearch || undefined,
+            typeFilter !== "all" ? typeFilter : undefined,
+          )
+        ).filter((t) => !t.isBranch);
         if (filterInactive) {
           const inactive = list.filter((t) => isInactiveAccount(t.accountStatus));
           const filtered =

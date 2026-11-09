@@ -183,6 +183,9 @@ export type TenantListItem = {
   lotCount: number;
   stockValueETB: number;
   parentName?: string | null;
+  parentTin?: string | null;
+  isBranch: boolean;
+  isMain: boolean;
   daysToRenewal?: number | null;
   salesAgentId?: number | null;
   salesAgentName?: string | null;
@@ -217,12 +220,25 @@ export type TenantPaymentRow = {
   years?: number;
 };
 
+export type TenantFamilyMember = {
+  id: number;
+  tinNumber: string;
+  name: string;
+  isMain: boolean;
+  isRoot: boolean;
+};
+
 export type TenantDetail = {
   id: number;
   tinNumber: string;
   hotelDisplayName: string;
   businessType: string | null;
   parentName: string | null;
+  parentTin: string | null;
+  isBranch: boolean;
+  isMain: boolean;
+  isRoot: boolean;
+  family: TenantFamilyMember[];
   logoUrl: string | null;
   accountStatus: string;
   subscriptionStatus: string;
@@ -693,6 +709,9 @@ function mapTenantListItem(row: Json): TenantListItem {
     lotCount: n(row.lot_count),
     stockValueETB: n(row.stock_value),
     parentName: row.parent_name ? str(row.parent_name) : null,
+    parentTin: row.parent_tin ? str(row.parent_tin) : null,
+    isBranch: bool(row.is_branch),
+    isMain: bool(row.is_main),
     daysToRenewal: row.days_to_renewal == null ? null : n(row.days_to_renewal),
     salesAgentId: row.sales_agent == null ? null : n(row.sales_agent),
     salesAgentName: row.sales_agent_name ? str(row.sales_agent_name) : null,
@@ -786,6 +805,17 @@ function mapTenantDetail(
     hotelDisplayName: str(row.name),
     businessType: axisOf(row),
     parentName: row.parent_name ? str(row.parent_name) : null,
+    parentTin: row.parent_tin ? str(row.parent_tin) : null,
+    isBranch: bool(row.is_branch),
+    isMain: bool(row.is_main),
+    isRoot: bool(row.is_root ?? !row.is_branch),
+    family: (Array.isArray(row.family) ? (row.family as Json[]) : []).map((member) => ({
+      id: n(member.id),
+      tinNumber: str(member.tin),
+      name: str(member.name),
+      isMain: bool(member.is_main),
+      isRoot: bool(member.is_root),
+    })),
     logoUrl: row.logo_url ? str(row.logo_url) : null,
     accountStatus: status(row.account_status),
     subscriptionStatus: subscriptionStanding(row.billing_state, row.subscription_state),
@@ -1859,6 +1889,11 @@ export type TenantBranchItem = {
   isMain: boolean;
   staffCount: number;
   accountStatus: string;
+  moduleInventory: boolean;
+  moduleHr: boolean;
+  salesRoleEnabled: boolean;
+  yearlyFeeETB: number;
+  setupFeeETB: number;
 };
 
 export async function fetchTenantBranches(
@@ -1872,6 +1907,11 @@ export async function fetchTenantBranches(
     isMain: bool(row.is_main),
     staffCount: n(row.staff_count),
     accountStatus: status(row.account_status),
+    moduleInventory: bool(row.module_inventory),
+    moduleHr: bool(row.module_hr),
+    salesRoleEnabled: bool(row.sales_role_enabled),
+    yearlyFeeETB: n(row.annual_fee),
+    setupFeeETB: n(row.setup_fee),
   }));
 }
 
@@ -1882,6 +1922,9 @@ export type TenantBranchDraft = {
   address?: string;
   username?: string;
   password?: string;
+  module_inventory?: boolean;
+  module_hr?: boolean;
+  sales_role_enabled?: boolean;
 };
 
 export async function createTenantBranch(
@@ -1899,4 +1942,209 @@ export async function createTenantBranch(
 export async function deleteTenantBranch(branchId: number): Promise<void> {
   await apexDelete(`/api/tenants/${branchId}/`);
   invalidateApexCaches();
+}
+
+/* ------------------------------------------------------------------ */
+/* Owner-filed branch requests + multi-branch yearly payments         */
+/* ------------------------------------------------------------------ */
+
+export type BranchRequestRow = {
+  id: number;
+  parentId: number;
+  parentName: string;
+  parentTin: string;
+  name: string;
+  tinNumber: string;
+  phone: string;
+  address: string;
+  vatRate: number;
+  moduleInventory: boolean;
+  moduleHr: boolean;
+  salesRoleEnabled: boolean;
+  makeMain: boolean;
+  managerName: string;
+  managerUsername: string;
+  setupChannel: string;
+  setupTransactionRef: string;
+  setupAmountETB: number;
+  status: string;
+  note: string;
+  decisionNote: string;
+  createdBy: string;
+  createdAt: string | null;
+  decidedBy: string;
+  decidedAt: string | null;
+  createdBranchTin: string | null;
+};
+
+function mapBranchRequest(row: Json): BranchRequestRow {
+  return {
+    id: n(row.id),
+    parentId: n(row.parent),
+    parentName: str(row.parent_name),
+    parentTin: str(row.parent_tin),
+    name: str(row.name),
+    tinNumber: str(row.tin),
+    phone: str(row.phone),
+    address: str(row.address),
+    vatRate: n(row.vat_rate),
+    moduleInventory: bool(row.module_inventory),
+    moduleHr: bool(row.module_hr),
+    salesRoleEnabled: bool(row.sales_role_enabled),
+    makeMain: bool(row.make_main),
+    managerName: str(row.manager_name),
+    managerUsername: str(row.manager_username),
+    setupChannel: str(row.setup_channel),
+    setupTransactionRef: str(row.setup_transaction_ref),
+    setupAmountETB: n(row.setup_amount),
+    status: status(row.status),
+    note: str(row.note),
+    decisionNote: str(row.decision_note),
+    createdBy: str(row.created_by),
+    createdAt: row.created_at ? String(row.created_at) : null,
+    decidedBy: str(row.decided_by),
+    decidedAt: row.decided_at ? String(row.decided_at) : null,
+    createdBranchTin: row.created_branch_tin ? str(row.created_branch_tin) : null,
+  };
+}
+
+export async function fetchBranchRequests(options?: {
+  status?: string;
+  parentId?: number;
+  search?: string;
+}): Promise<BranchRequestRow[]> {
+  const key = `apex:branch-requests:${options?.status || "all"}:${
+    options?.parentId ?? "all"
+  }:${(options?.search || "").trim().toLowerCase()}`;
+  return dedupeApexRead(key, async () => {
+    const page = await apexList<Json>("/api/tenants/branch-requests", {
+      status: options?.status || undefined,
+      parent: options?.parentId ?? undefined,
+      search: (options?.search || "").trim() || undefined,
+      limit: 200,
+    });
+    return page.rows.map(mapBranchRequest);
+  });
+}
+
+export async function decideBranchRequest(
+  id: number,
+  decision: "APPROVED" | "REJECTED",
+  note = "",
+): Promise<BranchRequestRow> {
+  const row = await apexPatch<Json>(`/api/tenants/branch-requests/${id}`, {
+    decision,
+    note,
+  });
+  invalidateApexCaches();
+  return mapBranchRequest(row);
+}
+
+export type BranchPaymentLineRow = {
+  lineId: number;
+  tenantId: number;
+  name: string;
+  tinNumber: string;
+  isMain: boolean;
+  amountETB: number;
+  years: number;
+  status: string;
+  coversUntil: string | null;
+  approvedUntil: string | null;
+  decisionNote: string;
+};
+
+export type BranchPaymentRow = {
+  id: number;
+  parentId: number;
+  parentName: string;
+  parentTin: string;
+  transactionRef: string;
+  channel: string;
+  years: number;
+  amountETB: number;
+  approvedAmountETB: number;
+  status: string;
+  note: string;
+  decisionNote: string;
+  submittedBy: string;
+  submittedAt: string | null;
+  decidedBy: string;
+  decidedAt: string | null;
+  createdAt: string | null;
+  branches: BranchPaymentLineRow[];
+  includedCount: number;
+  approvedCount: number;
+};
+
+function mapBranchPayment(row: Json): BranchPaymentRow {
+  const lines = Array.isArray(row.branches) ? (row.branches as Json[]) : [];
+  return {
+    id: n(row.id),
+    parentId: n(row.parent),
+    parentName: str(row.parent_name),
+    parentTin: str(row.parent_tin),
+    transactionRef: str(row.transaction_ref),
+    channel: str(row.channel),
+    years: n(row.years),
+    amountETB: n(row.amount),
+    approvedAmountETB: n(row.approved_amount),
+    status: status(row.status),
+    note: str(row.note),
+    decisionNote: str(row.decision_note),
+    submittedBy: str(row.submitted_by),
+    submittedAt: row.submitted_at ? String(row.submitted_at) : null,
+    decidedBy: str(row.decided_by),
+    decidedAt: row.decided_at ? String(row.decided_at) : null,
+    createdAt: row.created_at ? String(row.created_at) : null,
+    branches: lines.map((line) => ({
+      lineId: n(line.line_id),
+      tenantId: n(line.tenant),
+      name: str(line.name),
+      tinNumber: str(line.tin),
+      isMain: bool(line.is_main),
+      amountETB: n(line.amount),
+      years: n(line.years),
+      status: status(line.status),
+      coversUntil: line.covers_until ? String(line.covers_until) : null,
+      approvedUntil: line.approved_until ? String(line.approved_until) : null,
+      decisionNote: str(line.decision_note),
+    })),
+    includedCount: n(row.included_count),
+    approvedCount: n(row.approved_count),
+  };
+}
+
+export async function fetchBranchPayments(options?: {
+  status?: string;
+  parentId?: number;
+  search?: string;
+}): Promise<BranchPaymentRow[]> {
+  const key = `apex:branch-payments:${options?.status || "all"}:${
+    options?.parentId ?? "all"
+  }:${(options?.search || "").trim().toLowerCase()}`;
+  return dedupeApexRead(key, async () => {
+    const page = await apexList<Json>("/api/tenants/branch-payments", {
+      status: options?.status || undefined,
+      parent: options?.parentId ?? undefined,
+      search: (options?.search || "").trim() || undefined,
+      limit: 200,
+    });
+    return page.rows.map(mapBranchPayment);
+  });
+}
+
+export async function decideBranchPayment(
+  id: number,
+  decision: "APPROVED" | "PARTIALLY_APPROVED" | "REJECTED",
+  options?: { excludedLineIds?: number[]; includedLineIds?: number[]; note?: string },
+): Promise<BranchPaymentRow> {
+  const row = await apexPatch<Json>(`/api/tenants/branch-payments/${id}`, {
+    decision,
+    excluded_line_ids: options?.excludedLineIds,
+    included_line_ids: options?.includedLineIds,
+    note: options?.note || "",
+  });
+  invalidateApexCaches();
+  return mapBranchPayment(row);
 }

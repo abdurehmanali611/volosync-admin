@@ -32,8 +32,10 @@ import { ApexTenantSummaryStrip } from "@/components/apex/tenant/ApexTenantSumma
 import { ApexTenantLogoEditor } from "@/components/apex/tenant/ApexTenantLogoEditor";
 import {
   ApexTenantSectionNav,
+  TENANT_TABS,
   type TenantTabId,
 } from "@/components/apex/tenant/ApexTenantSectionNav";
+import { ApexTenantFamilyTabs } from "@/components/apex/tenant/ApexTenantFamilyTabs";
 import { useApexDashboard } from "@/lib/apex/dashboard-context";
 import { ApexTenantReporting } from "@/components/apex/tenant/ApexTenantReporting";
 import { ApexTenantBillingActions } from "@/components/apex/tenant/ApexTenantBillingActions";
@@ -71,6 +73,13 @@ export default function TenantDetailPage() {
       toast.error(e instanceof Error ? e.message : "Load failed"),
     );
   }, [reload]);
+
+  useEffect(() => {
+    // A satellite page has no Branches or Owner tab; keep the panel visible.
+    if (tenant?.isBranch && (tab === "branches" || tab === "owner")) {
+      setTab("reports");
+    }
+  }, [tenant?.isBranch, tab]);
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -111,6 +120,11 @@ export default function TenantDetailPage() {
         }
       />
 
+      <ApexTenantFamilyTabs
+        family={tenant.family}
+        currentTin={tenant.tinNumber}
+      />
+
       <ApexTenantSummaryStrip tenant={tenant} />
 
       <ApexTenantLogoEditor
@@ -120,7 +134,17 @@ export default function TenantDetailPage() {
         onSaved={() => reload()}
       />
 
-      <ApexTenantSectionNav value={tab} onValueChange={setTab} />
+      <ApexTenantSectionNav
+        value={tab}
+        onValueChange={setTab}
+        tabs={
+          tenant.isBranch
+            ? TENANT_TABS.filter(
+                (section) => section.id !== "branches" && section.id !== "owner",
+              )
+            : TENANT_TABS
+        }
+      />
 
       <div key={tab} className="apex-tenant-tab-panel min-w-0 space-y-6">
         {tab === "reports" ? (

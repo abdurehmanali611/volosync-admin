@@ -13,7 +13,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { TenantPickerOption } from "@/components/apex/feedback/ApexTenantPropertyPicker";
+import {
+  groupTenantOptions,
+  type TenantPickerOption,
+} from "@/components/apex/feedback/ApexTenantPropertyPicker";
 
 type Props = {
   options: TenantPickerOption[];
@@ -35,11 +38,21 @@ export function ApexTenantMultiPropertyPicker({
   const [open, setOpen] = useState(false);
   const selectedSet = useMemo(() => new Set(value), [value]);
   const selectedCount = value.length;
+  const groups = useMemo(() => groupTenantOptions(options), [options]);
 
   const toggle = (tin: string) => {
     const next = new Set(selectedSet);
     if (next.has(tin)) next.delete(tin);
     else next.add(tin);
+    onValueChange([...next]);
+  };
+
+  const toggleGroup = (groupOptions: TenantPickerOption[]) => {
+    const tins = groupOptions.map((o) => o.tinNumber);
+    const allSelected = tins.every((tin) => selectedSet.has(tin));
+    const next = new Set(selectedSet);
+    if (allSelected) tins.forEach((tin) => next.delete(tin));
+    else tins.forEach((tin) => next.add(tin));
     onValueChange([...next]);
   };
 
@@ -97,31 +110,60 @@ export function ApexTenantMultiPropertyPicker({
           </div>
           <CommandList>
             <CommandEmpty>No wholesaler found.</CommandEmpty>
-            <CommandGroup>
-              {options.map((o) => {
-                const checked = selectedSet.has(o.tinNumber);
-                return (
-                  <CommandItem
-                    key={o.tinNumber}
-                    value={`${o.hotelDisplayName} ${o.tinNumber}`}
-                    onSelect={() => toggle(o.tinNumber)}
-                    className="gap-2"
-                  >
-                    <Checkbox
-                      checked={checked}
-                      className="pointer-events-none"
-                      aria-hidden
-                    />
-                    <span className="min-w-0 flex-1 truncate">
-                      {o.hotelDisplayName}
-                    </span>
-                    <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                      {o.tinNumber}
-                    </span>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
+            {groups.map((group) => {
+              const groupTins = group.options.map((o) => o.tinNumber);
+              const selectedInGroup = groupTins.filter((tin) =>
+                selectedSet.has(tin),
+              ).length;
+              const allInGroup = selectedInGroup === groupTins.length;
+              return (
+                <CommandGroup
+                  key={group.tinNumber}
+                  heading={
+                    <div className="flex w-full items-center justify-between gap-2">
+                      <span className="truncate">{group.hotelDisplayName}</span>
+                      <span className="flex shrink-0 items-center gap-1.5 font-normal normal-case tracking-normal">
+                        {selectedInGroup}/{groupTins.length}
+                        <Checkbox
+                          checked={allInGroup}
+                          aria-label={`Select all ${group.hotelDisplayName}`}
+                          onCheckedChange={() => toggleGroup(group.options)}
+                        />
+                      </span>
+                    </div>
+                  }
+                >
+                  {group.options.map((o) => {
+                    const checked = selectedSet.has(o.tinNumber);
+                    return (
+                      <CommandItem
+                        key={o.tinNumber}
+                        value={`${o.hotelDisplayName} ${o.tinNumber} ${group.hotelDisplayName}`}
+                        onSelect={() => toggle(o.tinNumber)}
+                        className="gap-2"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          className="pointer-events-none"
+                          aria-hidden
+                        />
+                        <span className="min-w-0 flex-1 truncate">
+                          {o.hotelDisplayName}
+                        </span>
+                        {o.isMain ? (
+                          <span className="shrink-0 rounded border border-[var(--apex-gold)]/40 px-1 text-[10px] uppercase text-[var(--apex-gold)]">
+                            Main
+                          </span>
+                        ) : null}
+                        <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                          {o.tinNumber}
+                        </span>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              );
+            })}
           </CommandList>
         </Command>
       </PopoverContent>

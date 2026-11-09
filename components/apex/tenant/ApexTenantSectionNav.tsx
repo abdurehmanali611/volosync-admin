@@ -94,12 +94,14 @@ export function ApexTenantSectionNav({
   value,
   onValueChange,
   className,
+  tabs = TENANT_TABS,
 }: {
   value: TenantTabId;
   onValueChange: (id: TenantTabId) => void;
   className?: string;
+  tabs?: TenantSection[];
 }) {
-  const active = TENANT_TABS.find((t) => t.id === value) ?? TENANT_TABS[0];
+  const active = tabs.find((t) => t.id === value) ?? tabs[0];
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -108,7 +110,7 @@ export function ApexTenantSectionNav({
         className="apex-tenant-nav sticky top-15 z-5 -mx-1 overflow-x-auto px-1"
       >
         <div className="apex-tenant-tab-track inline-flex min-w-full gap-1 p-1.5 sm:min-w-0">
-          {TENANT_TABS.map((section) => {
+          {tabs.map((section) => {
             const Icon = section.icon;
             const isActive = section.id === value;
             return (
