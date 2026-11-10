@@ -29,35 +29,52 @@ export function SignupModuleSelector({
   onChange: (next: ModuleOption[]) => void;
 }) {
   const selected = new Set(value);
+  const hasInventory = selected.has("Inventory");
+  const hasSales = selected.has("Sales Role");
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {MODULE_OPTIONS.map((mod) => {
         const disabled = isModuleDisabledAtSignup(mod, businessType);
         const required = isModuleRequiredAtSignup(mod, businessType);
+        // The Sales Role is an add-on to Inventory: it cannot be checked
+        // without it, and Inventory cannot leave while Sales is checked.
+        const salesNeedsInventory = mod === "Sales Role" && !hasInventory;
+        const inventoryHeldBySales = mod === "Inventory" && hasSales;
+        const locked = disabled || salesNeedsInventory || inventoryHeldBySales;
         const checked = selected.has(mod);
-        const reason = getSignupDisabledReason(mod, businessType);
+        const catalogReason = getSignupDisabledReason(mod, businessType);
+        const reason = salesNeedsInventory
+          ? "Requires Inventory"
+          : inventoryHeldBySales
+            ? "Required by Sales Role"
+            : catalogReason;
 
         return (
           <div
             key={mod}
             className={cn(
               "relative flex gap-3 rounded-xl border p-4 transition-colors",
-              checked && !disabled
+              checked && !locked
                 ? "border-primary/40 bg-primary/5 shadow-sm"
                 : "border-border/80 bg-card/80",
-              disabled && "opacity-80",
+              locked && "opacity-80",
             )}
           >
             <Checkbox
               id={`signup-mod-${mod}`}
               checked={checked || required}
-              disabled={disabled}
+              disabled={locked}
               onCheckedChange={(next) => {
-                if (disabled) return;
+                if (locked) return;
                 const set = new Set(value);
-                if (next === true) set.add(mod);
-                else set.delete(mod);
+                if (next === true) {
+                  // Checking Sales Role pulls Inventory in automatically.
+                  if (mod === "Sales Role") set.add("Inventory");
+                  set.add(mod);
+                } else {
+                  set.delete(mod);
+                }
                 onChange(
                   MODULE_OPTIONS.filter((m) => set.has(m)) as ModuleOption[],
                 );
@@ -70,7 +87,7 @@ export function SignupModuleSelector({
                   htmlFor={`signup-mod-${mod}`}
                   className={cn(
                     "text-sm font-semibold leading-tight",
-                    !disabled && "cursor-pointer",
+                    !locked && "cursor-pointer",
                   )}
                 >
                   {mod}
