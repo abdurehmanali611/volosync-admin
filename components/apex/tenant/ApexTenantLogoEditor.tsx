@@ -26,16 +26,22 @@ export function ApexTenantLogoEditor({
   tenant,
   busy,
   onSaved,
-  /** Set only while the main branch detail is still loading for a satellite
-   * page; once loaded the editor targets the main branch directly. */
+  /** Set only while the company detail is still loading for a branch page;
+   * once loaded the editor targets the company logo directly. */
   inheritedLogoUrl,
+  lockedReason,
   scopeNote,
+  scopeTins,
 }: {
   tenant: TenantDetail;
   busy?: boolean;
   onSaved: () => void | Promise<void>;
   inheritedLogoUrl?: string | null;
+  lockedReason?: string;
   scopeNote?: string;
+  /** Every branch of the family; a logo change lands on all of them so no
+   * two branches ever carry different logos. */
+  scopeTins?: string[];
 }) {
   const [draftUrl, setDraftUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -55,7 +61,9 @@ export function ApexTenantLogoEditor({
     }
     setSaving(true);
     try {
-      await updateTenantLogo(tenant.tinNumber, url);
+      await Promise.all(
+        (scopeTins ?? [tenant.tinNumber]).map((tin) => updateTenantLogo(tin, url)),
+      );
       toast.success("Logo updated");
       setDraftUrl(null);
       await onSaved();
@@ -69,7 +77,9 @@ export function ApexTenantLogoEditor({
   const remove = async () => {
     setSaving(true);
     try {
-      await updateTenantLogo(tenant.tinNumber, "");
+      await Promise.all(
+        (scopeTins ?? [tenant.tinNumber]).map((tin) => updateTenantLogo(tin, "")),
+      );
       toast.success("Logo removed");
       setDraftUrl(null);
       await onSaved();
@@ -85,7 +95,7 @@ export function ApexTenantLogoEditor({
       title="Wholesaler logo"
       description={
         locked
-          ? "Satellite branches use the main branch's logo. Loading the main branch…"
+          ? (lockedReason ?? "Loading the company logo…")
           : "Replace the logo shown across VoloSync for this wholesaler. Name, TIN, and business type stay unchanged."
       }
       icon={ImageIcon}
@@ -175,7 +185,8 @@ export function ApexTenantLogoEditor({
         <div className="min-w-0 flex-1 space-y-3">
           {locked ? (
             <p className="text-sm text-muted-foreground">
-              The logo controls appear here once the main branch loads.
+              {lockedReason ??
+                "The logo controls appear here once the company loads."}
             </p>
           ) : (
             <>

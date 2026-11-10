@@ -27,7 +27,6 @@ import {
 } from "@/lib/apex/actions";
 import { Button } from "@/components/ui/button";
 import { ApexPageLoader } from "@/components/apex/ApexPageLoader";
-import { ApexTableSkeleton } from "@/components/apex/layout/ApexTableSkeleton";
 import { ApexPageHeader } from "@/components/apex/layout/ApexPageHeader";
 import { ApexTenantSummaryStrip } from "@/components/apex/tenant/ApexTenantSummaryStrip";
 import { ApexTenantLogoEditor } from "@/components/apex/tenant/ApexTenantLogoEditor";
@@ -75,28 +74,13 @@ export default function TenantDetailPage() {
     );
   }, [reload]);
 
-  const mainMember = tenant?.isBranch
-    ? (tenant.family.find((member) => member.isMain) ?? null)
-    : null;
-  const mainTin = mainMember?.tinNumber ?? null;
-  const mainMemberLogo = mainMember?.logoUrl ?? null;
-  const [mainTenant, setMainTenant] = useState<TenantDetail | null>(null);
-
   useEffect(() => {
-    if (!mainTin) return;
-    let alive = true;
-    fetchTenantDetail(mainTin)
-      .then((detail) => {
-        if (alive) setMainTenant(detail);
-      })
-      .catch((e) => {
-        if (alive) toast.error(e instanceof Error ? e.message : "Load failed");
-      });
-    return () => {
-      alive = false;
-    };
-    // The family logo changes after a logo save, so re-read the main then.
-  }, [mainTin, mainMemberLogo]);
+    // Only the main branch holds Branches and Owner; satellites keep reports.
+    if (tenant && !tenant.isMain && (tab === "branches" || tab === "owner")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTab("reports");
+    }
+  }, [tenant, tab]);
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -116,18 +100,20 @@ export default function TenantDetailPage() {
     return <ApexPageLoader label="Loading tenant…" />;
   }
 
-  // A satellite branch displays the main branch's logo in the summary strip.
-  const mainFamilyLogo = tenant.isBranch
-    ? (tenant.family.find((member) => member.isMain)?.logoUrl ?? null)
-    : undefined;
-
-  // Logo, Branches and Owner always belong to the family's main branch.
-  const familyMain = tenant.isBranch
-    ? mainTenant && mainTenant.tinNumber === mainTin
-      ? mainTenant
-      : null
-    : tenant;
-  const logoTarget = familyMain ?? tenant;
+  // No company root: the created tenant is the main branch until another
+  // branch is made main. The flag holder keeps the family mandate; every
+  // other member — including the original record — is a satellite.
+  const familyLogo =
+    tenant.family.find((member) => member.isMain)?.logoUrl ||
+    tenant.family.find((member) => member.logoUrl)?.logoUrl ||
+    null;
+  const anchor =
+    tenant.family.find((member) => member.isRoot) ??
+    tenant.family.find((member) => member.isMain);
+  const anchorId = anchor?.id ?? tenant.id;
+  const anchorTin = anchor?.tinNumber ?? tenant.tinNumber;
+  const anchorName = anchor?.name ?? tenant.hotelDisplayName;
+  const familyTins = tenant.family.map((member) => member.tinNumber);
 
   return (
     <div className="space-y-6">
@@ -155,17 +141,21 @@ export default function TenantDetailPage() {
         currentTin={tenant.tinNumber}
       />
 
-      <ApexTenantSummaryStrip tenant={tenant} logoUrlOverride={mainFamilyLogo} />
+      <ApexTenantSummaryStrip tenant={tenant} logoUrlOverride={familyLogo} />
 
       <ApexTenantLogoEditor
-        key={`logo-${logoTarget.tinNumber}-${logoTarget.logoUrl || ""}-${familyMain ? "edit" : "lock"}`}
-        tenant={logoTarget}
-        inheritedLogoUrl={
-          tenant.isBranch && !familyMain ? mainFamilyLogo : undefined
+        key={`logo-${tenant.tinNumber}-${familyLogo || ""}-${tenant.isMain ? "edit" : "lock"}`}
+        tenant={tenant.isMain ? { ...tenant, logoUrl: familyLogo } : tenant}
+        scopeTins={tenant.isMain ? familyTins : undefined}
+        inheritedLogoUrl={tenant.isMain ? undefined : familyLogo}
+        lockedReason={
+          tenant.isMain
+            ? undefined
+            : "Satellite branches share the company logo. Change or remove it from the main branch."
         }
         scopeNote={
-          tenant.isBranch && familyMain
-            ? `You are viewing ${tenant.hotelDisplayName} (branch). Logo changes apply to ${familyMain.hotelDisplayName}, the main branch, and every satellite.`
+          tenant.isMain
+            ? "This logo is shared by every branch of the company — changes here update the whole family."
             : undefined
         }
         busy={busy}
@@ -175,19 +165,19 @@ export default function TenantDetailPage() {
       <ApexTenantSectionNav
         value={tab}
         onValueChange={setTab}
-        tabs={TENANT_TABS}
+        tabs={
+          tenant.isMain
+            ? TENANT_TABS
+            : TENANT_TABS.filter(
+                (section) => section.id !== "branches" && section.id !== "owner",
+              )
+        }
       />
 
       <div key={tab} className="apex-tenant-tab-panel min-w-0 space-y-6">
-        {tenant.isBranch &&
-        familyMain &&
-        (tab === "branches" || tab === "owner") ? (
+        {tenant.isMain && (tab === "branches" || tab === "owner") ? (
           <p className="text-xs text-muted-foreground">
-            Satellite view — this panel manages{" "}
-            <span className="font-medium text-foreground">
-              {familyMain.hotelDisplayName}
-            </span>
-            , the main branch of the family.
+            Main branch — this panel manages the whole company family.
           </p>
         ) : null}
         {tab === "reports" ? (
@@ -284,27 +274,19 @@ export default function TenantDetailPage() {
         ) : null}
 
         {tab === "branches" ? (
-          familyMain ? (
-            <ApexTenantBranches
-              tenantId={familyMain.id}
-              tenantTin={familyMain.tinNumber}
-              busy={busy}
-              onChanged={() => reload()}
-            />
-          ) : (
-            <ApexTableSkeleton rows={4} cols={4} />
-          )
+          <ApexTenantBranches
+            tenantId={anchorId}
+            tenantTin={anchorTin}
+            busy={busy}
+            onChanged={() => reload()}
+          />
         ) : null}
 
         {tab === "owner" ? (
-          familyMain ? (
-            <ApexPortfolioOwnerPanel
-              tinNumber={familyMain.tinNumber}
-              hotelDisplayName={familyMain.hotelDisplayName}
-            />
-          ) : (
-            <ApexTableSkeleton rows={3} cols={3} />
-          )
+          <ApexPortfolioOwnerPanel
+            tinNumber={anchorTin}
+            hotelDisplayName={anchorName}
+          />
         ) : null}
       </div>
     </div>

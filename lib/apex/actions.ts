@@ -656,11 +656,24 @@ function axisOf(row: Json): string {
   return bool(row.is_branch) || row.parent != null ? "Branch" : "Company";
 }
 
+/** Backend lines and legacy payloads use aliases ("Sales role", "HR"); the
+ * console keys checkboxes, plans and pricing by canonical display names. */
+function canonicalModuleName(name: unknown): string | null {
+  const value = String(name ?? "").trim().toLowerCase();
+  if (value === "inventory") return "Inventory";
+  if (value === "hr" || value === "hr module") return "HR Module";
+  if (value === "sales" || value === "sales role") return "Sales Role";
+  return null;
+}
+
 function moduleCodesEnabled(row: Json): string[] {
   const lines = Array.isArray(row.modules) ? (row.modules as Json[]) : [];
-  const names = lines.filter((line) => bool(line.enabled)).map((line) => str(line.name));
+  const names = lines
+    .filter((line) => bool(line.enabled))
+    .map((line) => canonicalModuleName(str(line.name)))
+    .filter((name): name is string => Boolean(name));
   if (names.length) return names;
-  const out: string[] = ["Credentials"];
+  const out: string[] = [];
   if (bool(row.module_inventory)) out.push("Inventory");
   if (bool(row.module_hr)) out.push("HR Module");
   if (bool(row.sales_role_enabled)) out.push("Sales Role");
@@ -990,7 +1003,11 @@ export function suggestFeesForModules(
   yearlyFeeETB: number;
   exact: boolean;
 } | null {
-  const wanted = new Set(modules.map((m) => String(m).trim()).filter(Boolean));
+  const wanted = new Set(
+    modules
+      .map((m) => canonicalModuleName(m))
+      .filter((name): name is string => Boolean(name)),
+  );
   const active = rules.filter((r) => r.isActive);
   const exact = active.find((r) => {
     const plan = new Set(r.modules);
@@ -1533,19 +1550,17 @@ export async function updateTenantBilling(tinNumber: string, input: TenantBillin
 }
 
 /** Module display names ↔ the three switches the Django model stores. */
-const MODULE_FIELDS: Record<string, string> = {
-  inventory: "module_inventory",
-  "hr module": "module_hr",
-  "sales role": "sales_role_enabled",
-};
-
 function modulePatch(modules: string[]): Json {
-  const wanted = new Set(modules.map((m) => String(m).trim().toLowerCase()).filter(Boolean));
-  const patch: Json = {};
-  for (const [name, field] of Object.entries(MODULE_FIELDS)) {
-    patch[field] = wanted.has(name);
-  }
-  return patch;
+  const wanted = new Set(
+    modules
+      .map((m) => canonicalModuleName(m))
+      .filter((name): name is string => Boolean(name)),
+  );
+  return {
+    module_inventory: wanted.has("Inventory"),
+    module_hr: wanted.has("HR Module"),
+    sales_role_enabled: wanted.has("Sales Role"),
+  };
 }
 
 export async function updateTenantModules(

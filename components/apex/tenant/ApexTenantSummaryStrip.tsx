@@ -5,7 +5,6 @@ import { formatETB } from "@/lib/apex/analytics";
 import type { TenantDetail } from "@/lib/apex/actions";
 import {
   AccountStatusBadge,
-  BusinessTypeBadge,
   SubscriptionStatusBadge,
 } from "@/components/apex/StatusBadge";
 import { cn } from "@/lib/utils";
@@ -98,7 +97,17 @@ export function ApexTenantSummaryStrip({
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <BusinessTypeBadge businessType={tenant.businessType} />
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
+                    tenant.isMain
+                      ? "border-[oklch(0.75_0.08_85/0.35)] bg-[oklch(0.55_0.06_85/0.14)] text-[oklch(0.88_0.06_85)]"
+                      : "border-white/10 bg-white/5 text-muted-foreground",
+                  )}
+                >
+                  <Building2 className="h-3 w-3 shrink-0 opacity-90" />
+                  {tenant.isMain ? "Main" : "Satellite"}
+                </span>
                 <AccountStatusBadge status={tenant.accountStatus} />
                 <SubscriptionStatusBadge status={tenant.subscriptionStatus} />
                 {tenant.billingHold ? (
