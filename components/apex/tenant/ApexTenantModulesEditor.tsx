@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Layers3, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,11 @@ import {
   ApexTenantTabShell,
 } from "@/components/apex/tenant/ApexTenantTabShell";
 import { APEX_SUBSCRIPTION_MODULES } from "@/constants/subscriptionModules";
-import type { TenantDetail } from "@/lib/apex/actions";
+import {
+  fetchPricingRules,
+  suggestFeesForModules,
+} from "@/lib/apex/actions";
+import type { PricingRuleRow, TenantDetail } from "@/lib/apex/actions";
 import { cn } from "@/lib/utils";
 
 function formatEtb(n: number) {
@@ -40,6 +44,24 @@ export function ApexTenantModulesEditor({
   );
   const [selected, setSelected] = useState<Set<string>>(initial);
   const [recalcOnSave, setRecalcOnSave] = useState(!tenant.feesManuallySet);
+  const [rules, setRules] = useState<PricingRuleRow[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetchPricingRules()
+      .then((rows) => {
+        if (alive) setRules(rows);
+      })
+      .catch(() => {
+        if (alive) setRules([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [tenant.tinNumber]);
+  const draftFees = useMemo(
+    () => (rules ? suggestFeesForModules(rules, [...selected]) : null),
+    [rules, selected],
+  );
   const toggle = (mod: string, checked: boolean) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -65,16 +87,24 @@ export function ApexTenantModulesEditor({
         <div className="grid gap-3 sm:grid-cols-2">
           <ApexTenantMetricTile
             label="Catalog setup"
-            value={formatEtb(tenant.suggestedSetupFeeETB)}
-            sub="For current module mix"
+            value={formatEtb(
+              draftFees ? draftFees.setupFeeETB : tenant.suggestedSetupFeeETB,
+            )}
+            sub={draftFees ? `From ${draftFees.planName}` : "For current module mix"}
           />
           <ApexTenantMetricTile
             label="Catalog yearly"
-            value={formatEtb(tenant.suggestedYearlyFeeETB)}
+            value={formatEtb(
+              draftFees ? draftFees.yearlyFeeETB : tenant.suggestedYearlyFeeETB,
+            )}
             sub={
               tenant.feesManuallySet
                 ? "Custom fees locked until recalc"
-                : "Auto-sync on save"
+                : draftFees
+                  ? draftFees.exact
+                    ? `${draftFees.planName} · exact match`
+                    : `${draftFees.planName} + module add-ons`
+                  : "Auto-sync on save"
             }
           />
         </div>

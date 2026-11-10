@@ -1,9 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { ImageIcon } from "lucide-react";
+import { ImageIcon, Trash2 } from "lucide-react";
 import { CloudinaryImageUploadButton } from "@/components/cloudinary/CloudinaryImageUploadButton";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   ApexTenantTabShell,
 } from "@/components/apex/tenant/ApexTenantTabShell";
@@ -15,14 +26,16 @@ export function ApexTenantLogoEditor({
   tenant,
   busy,
   onSaved,
-  /** When set, the tab is read-only and always displays this logo — used by
-   * satellite branches, whose logo is the main branch's and cannot change. */
+  /** Set only while the main branch detail is still loading for a satellite
+   * page; once loaded the editor targets the main branch directly. */
   inheritedLogoUrl,
+  scopeNote,
 }: {
   tenant: TenantDetail;
   busy?: boolean;
   onSaved: () => void | Promise<void>;
   inheritedLogoUrl?: string | null;
+  scopeNote?: string;
 }) {
   const [draftUrl, setDraftUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -53,12 +66,26 @@ export function ApexTenantLogoEditor({
     }
   };
 
+  const remove = async () => {
+    setSaving(true);
+    try {
+      await updateTenantLogo(tenant.tinNumber, "");
+      toast.success("Logo removed");
+      setDraftUrl(null);
+      await onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not remove logo");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <ApexTenantTabShell
       title="Wholesaler logo"
       description={
         locked
-          ? "Satellite branches use the main branch's logo. It cannot be removed or changed here."
+          ? "Satellite branches use the main branch's logo. Loading the main branch…"
           : "Replace the logo shown across VoloSync for this wholesaler. Name, TIN, and business type stay unchanged."
       }
       icon={ImageIcon}
@@ -85,10 +112,54 @@ export function ApexTenantLogoEditor({
               {saving ? "Saving…" : "Save logo"}
             </Button>
           </div>
+        ) : current ? (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={saving || busy}
+                className="cursor-pointer gap-1.5 text-[oklch(0.72_0.17_25)] hover:bg-[oklch(0.62_0.2_25/0.12)] hover:text-[oklch(0.78_0.17_25)]"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Remove logo
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remove this logo?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {tenant.hotelDisplayName} will fall back to the default
+                  placeholder across VoloSync. You can upload a new logo at any
+                  time.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={saving}>Keep logo</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  className="rounded-xl font-semibold"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    void remove();
+                  }}
+                >
+                  {saving ? "Removing…" : "Remove logo"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         ) : null
       }
     >
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+      <div className="space-y-5">
+        {scopeNote ? (
+          <p className="rounded-xl border border-[oklch(0.75_0.08_85/0.25)] bg-[oklch(0.75_0.08_85/0.08)] px-3.5 py-2.5 text-xs leading-relaxed text-[oklch(0.88_0.06_85)]">
+            {scopeNote}
+          </p>
+        ) : null}
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
         <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5">
           {preview ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -104,8 +175,7 @@ export function ApexTenantLogoEditor({
         <div className="min-w-0 flex-1 space-y-3">
           {locked ? (
             <p className="text-sm text-muted-foreground">
-              This is the main branch&apos;s logo. To change it, open the Main
-              tab and edit the logo there.
+              The logo controls appear here once the main branch loads.
             </p>
           ) : (
             <>
@@ -126,6 +196,7 @@ export function ApexTenantLogoEditor({
               ) : null}
             </>
           )}
+        </div>
         </div>
       </div>
     </ApexTenantTabShell>

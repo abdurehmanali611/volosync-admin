@@ -27,6 +27,7 @@ import {
 } from "@/lib/apex/actions";
 import { Button } from "@/components/ui/button";
 import { ApexPageLoader } from "@/components/apex/ApexPageLoader";
+import { ApexTableSkeleton } from "@/components/apex/layout/ApexTableSkeleton";
 import { ApexPageHeader } from "@/components/apex/layout/ApexPageHeader";
 import { ApexTenantSummaryStrip } from "@/components/apex/tenant/ApexTenantSummaryStrip";
 import { ApexTenantLogoEditor } from "@/components/apex/tenant/ApexTenantLogoEditor";
@@ -74,12 +75,28 @@ export default function TenantDetailPage() {
     );
   }, [reload]);
 
+  const mainMember = tenant?.isBranch
+    ? (tenant.family.find((member) => member.isMain) ?? null)
+    : null;
+  const mainTin = mainMember?.tinNumber ?? null;
+  const mainMemberLogo = mainMember?.logoUrl ?? null;
+  const [mainTenant, setMainTenant] = useState<TenantDetail | null>(null);
+
   useEffect(() => {
-    // A satellite page has no Branches or Owner tab; keep the panel visible.
-    if (tenant?.isBranch && (tab === "branches" || tab === "owner")) {
-      setTab("reports");
-    }
-  }, [tenant?.isBranch, tab]);
+    if (!mainTin) return;
+    let alive = true;
+    fetchTenantDetail(mainTin)
+      .then((detail) => {
+        if (alive) setMainTenant(detail);
+      })
+      .catch((e) => {
+        if (alive) toast.error(e instanceof Error ? e.message : "Load failed");
+      });
+    return () => {
+      alive = false;
+    };
+    // The family logo changes after a logo save, so re-read the main then.
+  }, [mainTin, mainMemberLogo]);
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -99,10 +116,18 @@ export default function TenantDetailPage() {
     return <ApexPageLoader label="Loading tenant…" />;
   }
 
-  // A satellite branch displays — and cannot change — the main branch's logo.
+  // A satellite branch displays the main branch's logo in the summary strip.
   const mainFamilyLogo = tenant.isBranch
     ? (tenant.family.find((member) => member.isMain)?.logoUrl ?? null)
     : undefined;
+
+  // Logo, Branches and Owner always belong to the family's main branch.
+  const familyMain = tenant.isBranch
+    ? mainTenant && mainTenant.tinNumber === mainTin
+      ? mainTenant
+      : null
+    : tenant;
+  const logoTarget = familyMain ?? tenant;
 
   return (
     <div className="space-y-6">
@@ -133,9 +158,16 @@ export default function TenantDetailPage() {
       <ApexTenantSummaryStrip tenant={tenant} logoUrlOverride={mainFamilyLogo} />
 
       <ApexTenantLogoEditor
-        key={`logo-${tenant.tinNumber}-${tenant.logoUrl || ""}`}
-        tenant={tenant}
-        inheritedLogoUrl={mainFamilyLogo}
+        key={`logo-${logoTarget.tinNumber}-${logoTarget.logoUrl || ""}-${familyMain ? "edit" : "lock"}`}
+        tenant={logoTarget}
+        inheritedLogoUrl={
+          tenant.isBranch && !familyMain ? mainFamilyLogo : undefined
+        }
+        scopeNote={
+          tenant.isBranch && familyMain
+            ? `You are viewing ${tenant.hotelDisplayName} (branch). Logo changes apply to ${familyMain.hotelDisplayName}, the main branch, and every satellite.`
+            : undefined
+        }
         busy={busy}
         onSaved={() => reload()}
       />
@@ -143,16 +175,21 @@ export default function TenantDetailPage() {
       <ApexTenantSectionNav
         value={tab}
         onValueChange={setTab}
-        tabs={
-          tenant.isBranch
-            ? TENANT_TABS.filter(
-                (section) => section.id !== "branches" && section.id !== "owner",
-              )
-            : TENANT_TABS
-        }
+        tabs={TENANT_TABS}
       />
 
       <div key={tab} className="apex-tenant-tab-panel min-w-0 space-y-6">
+        {tenant.isBranch &&
+        familyMain &&
+        (tab === "branches" || tab === "owner") ? (
+          <p className="text-xs text-muted-foreground">
+            Satellite view — this panel manages{" "}
+            <span className="font-medium text-foreground">
+              {familyMain.hotelDisplayName}
+            </span>
+            , the main branch of the family.
+          </p>
+        ) : null}
         {tab === "reports" ? (
           <ApexTenantReporting tenant={tenant} payments={payments} />
         ) : null}
@@ -247,19 +284,27 @@ export default function TenantDetailPage() {
         ) : null}
 
         {tab === "branches" ? (
-          <ApexTenantBranches
-            tenantId={tenant.id}
-            tenantTin={tenant.tinNumber}
-            busy={busy}
-            onChanged={() => reload()}
-          />
+          familyMain ? (
+            <ApexTenantBranches
+              tenantId={familyMain.id}
+              tenantTin={familyMain.tinNumber}
+              busy={busy}
+              onChanged={() => reload()}
+            />
+          ) : (
+            <ApexTableSkeleton rows={4} cols={4} />
+          )
         ) : null}
 
         {tab === "owner" ? (
-          <ApexPortfolioOwnerPanel
-            tinNumber={tin}
-            hotelDisplayName={tenant.hotelDisplayName}
-          />
+          familyMain ? (
+            <ApexPortfolioOwnerPanel
+              tinNumber={familyMain.tinNumber}
+              hotelDisplayName={familyMain.hotelDisplayName}
+            />
+          ) : (
+            <ApexTableSkeleton rows={3} cols={3} />
+          )
         ) : null}
       </div>
     </div>

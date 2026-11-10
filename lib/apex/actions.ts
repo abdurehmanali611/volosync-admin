@@ -980,6 +980,44 @@ export function modulesFromPlanName(name: string): string[] | null {
   return known.length > 0 ? known : null;
 }
 
+/** Mirrors BackEnd/tenants/pricing.py suggest_fees for a draft module mix. */
+export function suggestFeesForModules(
+  rules: PricingRuleRow[],
+  modules: readonly string[],
+): {
+  planName: string;
+  setupFeeETB: number;
+  yearlyFeeETB: number;
+  exact: boolean;
+} | null {
+  const wanted = new Set(modules.map((m) => String(m).trim()).filter(Boolean));
+  const active = rules.filter((r) => r.isActive);
+  const exact = active.find((r) => {
+    const plan = new Set(r.modules);
+    return plan.size === wanted.size && [...wanted].every((m) => plan.has(m));
+  });
+  if (exact) {
+    return {
+      planName: exact.modulesKey,
+      setupFeeETB: exact.setupFeeETB,
+      yearlyFeeETB: exact.yearlyFeeETB,
+      exact: true,
+    };
+  }
+  const base = active.find((r) => r.isDefault) ?? active[0];
+  if (!base) return null;
+  let yearly = base.yearlyFeeETB;
+  if (wanted.has("Inventory")) yearly += base.inventoryYearlyFeeETB ?? 0;
+  if (wanted.has("HR Module")) yearly += base.hrYearlyFeeETB ?? 0;
+  if (wanted.has("Sales Role")) yearly += base.salesRoleYearlyFeeETB ?? 0;
+  return {
+    planName: base.modulesKey,
+    setupFeeETB: base.setupFeeETB,
+    yearlyFeeETB: yearly,
+    exact: false,
+  };
+}
+
 function mapPricingRule(row: Json): PricingRuleRow {
   const feeModules: string[] = [];
   if (n(row.inventory_yearly_fee) > 0) feeModules.push("Inventory");
@@ -1498,7 +1536,6 @@ export async function updateTenantBilling(tinNumber: string, input: TenantBillin
 const MODULE_FIELDS: Record<string, string> = {
   inventory: "module_inventory",
   "hr module": "module_hr",
-  "hr": "module_hr",
   "sales role": "sales_role_enabled",
 };
 
