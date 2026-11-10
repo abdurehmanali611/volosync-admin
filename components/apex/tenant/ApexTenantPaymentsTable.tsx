@@ -15,6 +15,7 @@ import {
   approveYearly,
   approveSetup,
   rejectPayment,
+  rejectSetupPayment,
   type TenantDetail,
 } from "@/lib/apex/actions";
 
@@ -153,10 +154,15 @@ export function ApexTenantPaymentsTable({
                     }
                     onClick={() =>
                       run(row.original.id, () =>
-                        rejectPayment(
-                          row.original.id,
-                          rejectReason[row.original.id] ?? "",
-                        ),
+                        row.original.paymentKind === "setup"
+                          ? rejectSetupPayment(
+                              row.original.id,
+                              rejectReason[row.original.id] ?? "",
+                            )
+                          : rejectPayment(
+                              row.original.id,
+                              rejectReason[row.original.id] ?? "",
+                            ),
                       )
                     }
                   >

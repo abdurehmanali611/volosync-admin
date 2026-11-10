@@ -11,6 +11,7 @@ import {
   approveSetup,
   approveYearly,
   rejectPayment,
+  rejectSetupPayment,
   invalidateApexCaches,
   type PaymentRow,
 } from "@/lib/apex/actions";
@@ -176,7 +177,11 @@ export function ApexPaymentsQueue({ kind }: { kind: PaymentKind }) {
                 )
               }
               onReject={(reason) =>
-                act(row.original.id, () => rejectPayment(row.original.id, reason))
+                act(row.original.id, () =>
+                  kind === "setup"
+                    ? rejectSetupPayment(row.original.id, reason)
+                    : rejectPayment(row.original.id, reason),
+                )
               }
             />
           </div>

@@ -1152,6 +1152,17 @@ export async function approveYearly(tinNumber: string) {
   afterPaymentMutation();
 }
 
+export async function rejectSetupPayment(submissionId: number, reason: string) {
+  const note = reason.trim();
+  if (note.length < 4) throw new Error("Explain the rejection — the wholesaler sees it.");
+  await apexPatch("/api/tenants/setup-payments", {
+    id: submissionId,
+    status: "REJECTED",
+    note,
+  });
+  afterPaymentMutation();
+}
+
 export async function rejectPayment(submissionId: number, reason: string) {
   const note = reason.trim();
   if (!note) throw new Error("Rejection reason is required");
