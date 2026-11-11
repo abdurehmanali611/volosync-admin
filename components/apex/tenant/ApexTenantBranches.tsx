@@ -250,7 +250,7 @@ export function ApexTenantBranches({
                       id="branch-tin"
                       value={draft.tin}
                       onChange={(e) => set("tin")(e.target.value)}
-                      placeholder="Own TIN, not the company TIN"
+                      placeholder="Own TIN, not another branch's"
                       className="h-10"
                     />
                   </Field>

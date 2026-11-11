@@ -74,14 +74,6 @@ export default function TenantDetailPage() {
     );
   }, [reload]);
 
-  useEffect(() => {
-    // Only the main branch holds Branches and Owner; satellites keep reports.
-    if (tenant && !tenant.isMain && (tab === "branches" || tab === "owner")) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTab("reports");
-    }
-  }, [tenant, tab]);
-
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
     try {
@@ -162,22 +154,13 @@ export default function TenantDetailPage() {
         onSaved={() => reload()}
       />
 
-      <ApexTenantSectionNav
-        value={tab}
-        onValueChange={setTab}
-        tabs={
-          tenant.isMain
-            ? TENANT_TABS
-            : TENANT_TABS.filter(
-                (section) => section.id !== "branches" && section.id !== "owner",
-              )
-        }
-      />
+      <ApexTenantSectionNav value={tab} onValueChange={setTab} tabs={TENANT_TABS} />
 
       <div key={tab} className="apex-tenant-tab-panel min-w-0 space-y-6">
-        {tenant.isMain && (tab === "branches" || tab === "owner") ? (
+        {tab === "branches" || tab === "owner" ? (
           <p className="text-xs text-muted-foreground">
-            Main branch — this panel manages the whole company family.
+            Every member of the company is a branch — this panel manages the
+            whole family, whichever branch you opened it from.
           </p>
         ) : null}
         {tab === "reports" ? (
